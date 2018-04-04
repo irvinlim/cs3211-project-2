@@ -5,19 +5,11 @@
 #include <assert.h>
 #include "common.h"
 
-#define DEBUG 1
-
-/**
- * Prints debug statements.
- */
-void debug(char *msg)
-{
 #if defined(DEBUG) && DEBUG > 0
 #define DEBUG_PRINT(x) printf x
 #else // clang-format off
 #define DEBUG_PRINT(x) do {} while (0);
 #endif // clang-format on
-}
 
 /** 
  * Determines the current time.
@@ -95,6 +87,7 @@ Spec read_spec_file(char *specfile)
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
     for (i = 0; i < spec.NumberOfLargeParticles; i++)
     {
+        spec.LargeParticles[i].size = LARGE;
         fscanf(fp,
                "%Lf %Lf %Lf %Lf\n",
                &spec.LargeParticles[i].mass,
@@ -104,8 +97,21 @@ Spec read_spec_file(char *specfile)
     }
 
     // Debug print all read-in values.
+    print_spec(spec);
+
+    // Clean up.
+    fclose(fp);
+
+    return spec;
+}
+
+/**
+ * Debug prints the Spec.
+ */
+void print_spec(Spec spec)
+{
     DEBUG_PRINT(("\033[0;36m"));
-    DEBUG_PRINT(("Specification file read (%s):\n", specfile));
+    DEBUG_PRINT(("Specification:\n"));
     DEBUG_PRINT(("+ TimeSlots: %ld\n", spec.TimeSlots));
     DEBUG_PRINT(("+ TimeStep: %Lf\n", spec.TimeStep));
     DEBUG_PRINT(("+ Horizon: %ld\n", spec.Horizon));
@@ -114,20 +120,5 @@ Spec read_spec_file(char *specfile)
     DEBUG_PRINT(("+ SmallParticleMass: %Lf\n", spec.SmallParticleMass));
     DEBUG_PRINT(("+ SmallParticleRadius: %Lf\n", spec.SmallParticleRadius));
     DEBUG_PRINT(("+ NumberOfLargeParticles: %lld\n", spec.NumberOfLargeParticles));
-    DEBUG_PRINT(("+ LargeParticles:\n"));
-    for (i = 0; i < spec.NumberOfLargeParticles; i++)
-    {
-        DEBUG_PRINT(("+ %d: Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf)\n",
-                     i + 1,
-                     spec.LargeParticles[i].mass,
-                     spec.LargeParticles[i].radius,
-                     spec.LargeParticles[i].x,
-                     spec.LargeParticles[i].y));
-    }
-    DEBUG_PRINT(("\033[0m"));
-
-    // Clean up.
-    fclose(fp);
-
-    return spec;
+    DEBUG_PRINT(("\033[0m\n"));
 }

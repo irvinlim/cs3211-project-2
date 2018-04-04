@@ -4,10 +4,10 @@ LDIR=$(IDIR)/utils
 CC=mpicc
 CFLAGS=-Wall
 
-DEPS=$(LDIR)/types.h $(LDIR)/common.h
+DEPS=$(LDIR)/common.o $(LDIR)/particles.o
 
-POOL_OBJS=$(IDIR)/pool.c $(LDIR)/common.o
-POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LDIR)/common.o
+POOL_OBJS=$(IDIR)/pool.c $(DEPS)
+POOLSEQ_OBJS=$(IDIR)/poolseq.c $(DEPS)
 
 .DEFAULT_GOAL := all
 .PHONY: clean

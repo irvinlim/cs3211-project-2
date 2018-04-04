@@ -2,10 +2,21 @@
 #define TYPES_H
 
 /**
+ * Enum for particle size.
+ */
+typedef enum particle_size_t {
+    SMALL,
+    LARGE,
+} ParticleSize;
+
+/**
  * Data structure for a large particle.
  */
 typedef struct particle_t
 {
+    // Type of particle (large or small).
+    ParticleSize size;
+
     // Mass of the particle.
     long double mass;
 
