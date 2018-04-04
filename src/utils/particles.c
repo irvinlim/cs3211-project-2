@@ -3,13 +3,9 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "particles.h"
 
-#if defined(DEBUG_PARTICLES) && DEBUG_PARTICLES > 0
-#define DEBUG_PRINT(x) printf x
-#else // clang-format off
-#define DEBUG_PRINT(x) do {} while (0);
-#endif // clang-format on
+#include "particles.h"
+#include "log.h"
 
 #define BITMAP_MAX 255
 
@@ -47,35 +43,58 @@ Particle *generate_particles(Spec spec)
 }
 
 /**
- * Count the number of small particles in each cell in all regions.
+ * Generates a 2-D canvas of all particles.
+ * 
+ * Any values less than or equal to BITMAP_MAX represents
+ * the presence of the body of a small particle, while
+ * any value greater than BITMAP_MAX represents the body
+ * of a large particle.
  */
-int **count_small_particles(Spec spec, Particle *particles)
+int **generate_canvas(Spec spec, Particle *particles)
 {
-    long long i;
-    long x, y;
-    int **canvas;
-
     // Get canvas length.
     long canvas_length = spec.GridSize * spec.PoolLength;
 
     // Allocate enough memory for a 2-D canvas.
-    canvas = (int **)malloc(canvas_length * sizeof(int *));
-    for (i = 0; i < canvas_length; i++)
+    int **canvas = (int **)malloc(canvas_length * sizeof(int *));
+    for (long i = 0; i < canvas_length; i++)
         canvas[i] = (int *)calloc(canvas_length, sizeof(int));
 
     // Iterate through all particles.
-    for (i = 0; i < spec.TotalNumberOfParticles; i++)
+    for (long i = 0; i < spec.TotalNumberOfParticles; i++)
     {
-        // Only count small particles.
-        if (particles[i].size != SMALL)
-            continue;
+        Particle p = particles[i];
 
-        // Round down the coordinates of the particle.
-        x = (int)floor(particles[i].x);
-        y = (int)floor(particles[i].y);
+        // Round down the coordinates of the particle's origin and radius.
+        long x0 = floor(p.x);
+        long y0 = floor(p.y);
+        long r = floor(p.radius);
 
-        // Increment the counter for the position.
-        canvas[y][x]++;
+        // Iterate through all pixels occupied by the particle using simple
+        // radius checking in the bounding box.
+        for (long j = -r; j <= r; j++)
+        {
+            for (long k = -r; k <= r; k++)
+            {
+                if (j * j + k * k <= r * r)
+                {
+                    // Get the coordinates relative to the origin.
+                    long x = x0 + k;
+                    long y = y0 + j;
+
+                    // Prevent drawing outside of the bounds of the array.
+                    if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length)
+                        continue;
+
+                    // If the particle size is large, we immediately set the value to BITMAP_MAX + 1.
+                    // Otherwise, we will increment the value, up to BITMAP_MAX.
+                    if (p.size == LARGE || canvas[y][x] > BITMAP_MAX)
+                        canvas[y][x] = BITMAP_MAX + 1;
+                    else
+                        canvas[y][x] = fmin(BITMAP_MAX, canvas[y][x] + 1);
+                }
+            }
+        }
     }
 
     return canvas;
@@ -86,10 +105,6 @@ int **count_small_particles(Spec spec, Particle *particles)
  */
 void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 {
-    int count;
-    long i, j;
-    int **canvas;
-
     // Get canvas length.
     long canvas_length = spec.GridSize * spec.PoolLength;
 
@@ -101,24 +116,25 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
         exit(EXIT_FAILURE);
     }
 
-    // Print header.
+    // Print PPM header.
     fprintf(fp, "P3\n%ld %ld\n%d\n", spec.GridSize, spec.GridSize, BITMAP_MAX);
 
-    // Count large and small particles.
-    canvas = count_small_particles(spec, particles);
+    // Generate canvas from the list of particles.
+    int **canvas = generate_canvas(spec, particles);
 
-    // Print each row.
-    for (i = 0; i < canvas_length; i++)
+    // Print each cell.
+    for (int y = 0; y < canvas_length; y++)
     {
-        for (j = 0; j < canvas_length; j++)
+        for (int x = 0; x < canvas_length; x++)
         {
-            // Cap the number at BITMAP_MAX.
-            count = canvas[i][j] > BITMAP_MAX ? BITMAP_MAX : canvas[i][j];
+            // If the value is greater than BITMAP_MAX, we draw a blue pixel.
+            // Otherwise, we draw a red pixel whose intensity is the value.
+            if (canvas[y][x] > BITMAP_MAX)
+                fprintf(fp, "0 0 %d", BITMAP_MAX);
+            else
+                fprintf(fp, "%d 0 0", canvas[y][x]);
 
-            // Write count to the file.
-            fprintf(fp, "%d 0 0", count);
-
-            if (j < canvas_length - 1)
+            if (x < canvas_length - 1)
                 fprintf(fp, " ");
             else
                 fprintf(fp, "\n");
@@ -126,7 +142,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     }
 
     // Print success message.
-    printf("\033[0;32mSuccessfully written image to %s.\033[0m\n", outputfile);
+    LL_SUCCESS("Successfully written image to %s.", outputfile);
 
     // Clean up.
     fclose(fp);
@@ -137,13 +153,13 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
  */
 void print_particle(Particle particle)
 {
-    DEBUG_PRINT((
-        "+ Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf)\n",
+    LL_VERBOSE(
+        "  Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
         particle.size,
         particle.mass,
         particle.radius,
         particle.x,
-        particle.y));
+        particle.y);
 }
 
 /**
@@ -151,12 +167,17 @@ void print_particle(Particle particle)
  */
 void print_particles(long long n, Particle *particles)
 {
-    long long i;
-    DEBUG_PRINT(("\033[0;36m"));
+    if (log_level < LOG_LEVEL_DEBUG)
+        return;
 
-    DEBUG_PRINT(("Generated particles:\n"));
-    for (i = 0; i < n; i++)
-        print_particle(particles[i]);
+    LL_DEBUG("%s: ", "Generated particles");
 
-    DEBUG_PRINT(("\033[0m\n"));
+    for (long long i = 0; i < n; i++)
+        LL_DEBUG(
+            "  Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf)",
+            particles[i].size,
+            particles[i].mass,
+            particles[i].radius,
+            particles[i].x,
+            particles[i].y);
 }

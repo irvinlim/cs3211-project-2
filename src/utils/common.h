@@ -1,7 +1,5 @@
 #include "types.h"
 
-#define DEBUG_COMMON 1
-
 /**
  * Prints debug statements.
  */
