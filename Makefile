@@ -1,26 +1,29 @@
 IDIR=src
+LDIR=$(IDIR)/utils
+
 CC=mpicc
 CFLAGS=-Wall
 
-DEPS = pool.h
+DEPS=$(LDIR)/types.h $(LDIR)/common.h
+
+POOL_OBJS=$(IDIR)/pool.c $(LDIR)/common.o
+POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LDIR)/common.o
 
 .DEFAULT_GOAL := all
+.PHONY: clean
 
 ALL=pool poolseq
 all: $(ALL)
 
-%.o: %.cpp $(DEPS)
-	$(CC) -Wall -c -o $@ $< $(CFLAGS)
-
 %.o: %.c $(DEPS)
-	$(CC) -Wall -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-pool: $(IDIR)/pool.c
+pool: $(POOL_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-poolseq: $(IDIR)/poolseq.c
+poolseq: $(POOLSEQ_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
-	rm -f *.o
+	rm -f $(IDIR)/*.o $(IDIR)/**/*.o
 	rm -f $(ALL)

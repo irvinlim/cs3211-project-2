@@ -1,26 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <assert.h>
 #include <mpi.h>
+#include "utils/common.h"
 
-/** 
- * Determines the current time.
+#define PROG "poolseq"
+
+/**
+ * Runs the simulation according to the provided specifications.
  */
-long long wall_clock_time()
+void run_simulation(Spec spec, char *outputfile)
 {
-#ifdef LINUX
-    struct timespec tp;
-    clock_gettime(CLOCK_REALTIME, &tp);
-    return (long long)(tp.tv_nsec + (long long)tp.tv_sec * 1000000000ll);
-#else
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (long long)(tv.tv_usec * 1000 + (long long)tv.tv_sec * 1000000000ll);
-#endif
 }
 
 int main(int argc, char **argv)
 {
-    return 0;
+    // Parse arguments.
+    check_arguments(argc, argv, PROG);
+    char *specfile = argv[1];
+    char *outputfile = argv[2];
+
+    // Read the specification file into a struct.
+    Spec spec = read_spec_file(specfile);
+
+    // Run the simulation.
+    run_simulation(spec, outputfile);
+
+    // Clean up.
+    exit(EXIT_SUCCESS);
 }
