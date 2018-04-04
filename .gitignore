@@ -32,4 +32,8 @@
 *.app
 
 # Built Binaries
-./pool
+/pool
+/poolseq
+
+# Output files
+*.ppm

@@ -16,11 +16,22 @@ To build the program, a Makefile is included. Run `make` as such:
 make clean && make
 ```
 
-You can then run the program by calling the binary executable with `mpirun`:
+## Usage
+
+You can then run the program by calling the binary executable with `mpirun`, where `initialspec.txt` is a path to the specification file, and `finalbrd.ppm` is the path of the output PPM image file:
 
 ```sh
 mpirun ./pool initialspec.txt finalbrd.ppm -np 64
 ```
+
+Change the value of the `np` flag to specify the number of processes that the simulation should run on.
+
+### Variants
+
+Some variants of the program are included, which are listed below. All of the binaries take in the same command-line arguments as described above.
+
+* `pool`: Parallel version of the galactic pool simulator
+* `poolseq`: Sequential version of the galactic pool simulator
 
 ## License
 

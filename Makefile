@@ -1,18 +1,17 @@
 IDIR=src
-CC=mpic++
-CFLAGS=-I $(IDIR)
+CC=mpicc
+CFLAGS=-Wall
 
-DEPS=
+.DEFAULT_GOAL := all
 
-ODIR=obj
+ALL=pool poolseq
+all: $(ALL)
 
-$(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -Wall -c -o $@ $< $(CFLAGS)
+pool: $(IDIR)/pool.c
+	$(CC) -o $@ $^ $(CFLAGS)
 
-pool: $(OBJ)
-	$(CC) -Wall -o $@ $^ $(CFLAGS)
-
-.PHONY: clean
+poolseq: $(IDIR)/poolseq.c
+	$(CC) -o $@ $^ $(CFLAGS)
 
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ 
