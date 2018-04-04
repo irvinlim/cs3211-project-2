@@ -1,7 +1,7 @@
 #include "types.h"
 #include "common.h"
 
-#define DEBUG_PARTICLES 0
+#define DEBUG_PARTICLES 1
 
 /**
  * Generate all particles based on the provided specifications.
@@ -16,4 +16,4 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile);
 /**
  * Debug prints all particles.
  */
-void print_particles(Particle *particles);
+void print_particles(long long n, Particle *particles);

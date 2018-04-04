@@ -41,7 +41,7 @@ Particle *generate_particles(Spec spec)
         };
 
     // Debug print all particles.
-    print_particles(particles);
+    print_particles(spec.TotalNumberOfParticles, particles);
 
     return particles;
 }
@@ -149,12 +149,14 @@ void print_particle(Particle particle)
 /**
  * Debug prints all particles.
  */
-void print_particles(Particle *particles)
+void print_particles(long long n, Particle *particles)
 {
-    int i;
+    long long i;
     DEBUG_PRINT(("\033[0;36m"));
+
     DEBUG_PRINT(("Generated particles:\n"));
-    for (i = 0; i < sizeof(particles); i++)
+    for (i = 0; i < n; i++)
         print_particle(particles[i]);
+
     DEBUG_PRINT(("\033[0m\n"));
 }
