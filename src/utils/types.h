@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 /**
  * Data structure for a large particle.
  */
@@ -49,3 +52,5 @@ typedef struct spec_t
     // 0: Mass; 1: Radius; 2: x-coordinate; 3: y-coordinate
     Particle *LargeParticles;
 } Spec;
+
+#endif
