@@ -29,6 +29,9 @@ int main(int argc, char **argv)
     // Run the simulation.
     run_simulation(particles, spec);
 
+    // Generate the heatmap.
+    generate_heatmap(spec, particles, outputfile);
+
     // Clean up.
     exit(EXIT_SUCCESS);
 }

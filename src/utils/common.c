@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "common.h"
 
-#if defined(DEBUG) && DEBUG > 0
+#if defined(DEBUG_COMMON) && DEBUG_COMMON > 0
 #define DEBUG_PRINT(x) printf x
 #else // clang-format off
 #define DEBUG_PRINT(x) do {} while (0);
@@ -55,7 +55,9 @@ Spec read_spec_file(char *specfile)
     }
 
     // Create SPEC struct.
-    Spec spec;
+    Spec spec = {
+        .PoolLength = 1,
+    };
 
     // Read specification lines.
     // Assumes that values are in fixed format.
@@ -76,6 +78,9 @@ Spec read_spec_file(char *specfile)
            &spec.SmallParticleMass,
            &spec.SmallParticleRadius,
            &spec.NumberOfLargeParticles);
+
+    // Calculate total number of particles.
+    spec.TotalNumberOfParticles = spec.NumberOfSmallParticles + spec.NumberOfLargeParticles;
 
     // Read large particle values, according to NumberOfLargeParticles.
     if (spec.NumberOfLargeParticles < 0)

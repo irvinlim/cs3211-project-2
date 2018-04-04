@@ -44,7 +44,7 @@ typedef struct spec_t
     // Max distance of adjacent regions to factor in.
     long Horizon;
 
-    // Length of the 2-D grid.
+    // Length of the 2-D grid for each region.
     long GridSize;
 
     // Number of small (gas) particles.
@@ -62,6 +62,13 @@ typedef struct spec_t
     // Array of large particle data, in the following format:
     // 0: Mass; 1: Radius; 2: x-coordinate; 3: y-coordinate
     Particle *LargeParticles;
+
+    // Length of the 2-D grid of all regions.
+    // If there are 9 regions, PoolLength is 3.
+    int PoolLength;
+
+    // Total number of particles.
+    long long TotalNumberOfParticles;
 } Spec;
 
 #endif
