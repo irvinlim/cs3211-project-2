@@ -13,7 +13,8 @@ This project uses OpenMPI, and is known to work on at least version 3.0.1. You c
 To build the program, a Makefile is included. Run `make` as such:
 
 ```sh
-make clean && make
+make clean
+make
 ```
 
 ## Usage
@@ -21,7 +22,7 @@ make clean && make
 You can then run the program by calling the binary executable with `mpirun`, where `initialspec.txt` is a path to the specification file, and `finalbrd.ppm` is the path of the output PPM image file:
 
 ```sh
-mpirun ./pool initialspec.txt finalbrd.ppm -np 64
+mpirun -np 64 ./pool initialspec.txt finalbrd.ppm
 ```
 
 Change the value of the `np` flag to specify the number of processes that the simulation should run on.

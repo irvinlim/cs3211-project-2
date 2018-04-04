@@ -1,28 +1,11 @@
-# Number of iterations to compute.
 TimeSlots: 100
-
-# Unit time step for each iteration.
 TimeStep: 0.1
-
-# Specifies (Integer).
-# e.g.  0 => No process communication
-#       1 => Adjacent process communication
 Horizon: 1
-
-# Specifies the length of the 2-D grid.
-# e.g. GridSize of 200 results in a 200x200 grid.
 GridSize: 200
-
-# Number of small (gas) particles.
 NumberOfSmallParticles: 1000000
-SmallParticleMass: 0.0001           # in mass units
-SmallParticleRadius: 0.0001         # in cell-size units
-
-# Number of large (planet) particles.
+SmallParticleMass: 0.0001
+SmallParticleRadius: 0.0001
 NumberOfLargeParticles: 4
-
-# Location of each of the large particles.
-# Format of each line: radius mass locx locy
 8 1.5 56.5 70.11
 6 1 156 20.1
 12 3.1 56.5 70.11
