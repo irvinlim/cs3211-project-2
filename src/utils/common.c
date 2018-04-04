@@ -3,13 +3,10 @@
 #include <string.h>
 #include <sys/time.h>
 #include <assert.h>
-#include "common.h"
 
-#if defined(DEBUG_COMMON) && DEBUG_COMMON > 0
-#define DEBUG_PRINT(x) printf x
-#else // clang-format off
-#define DEBUG_PRINT(x) do {} while (0);
-#endif // clang-format on
+#include "common.h"
+#include "particles.h"
+#include "log.h"
 
 /** 
  * Determines the current time.
@@ -44,8 +41,6 @@ void check_arguments(int argc, char **argv, char *prog)
  */
 Spec read_spec_file(char *specfile)
 {
-    int i;
-
     // Open the specification file.
     FILE *fp = fopen(specfile, "r");
     if (fp == NULL)
@@ -90,7 +85,7 @@ Spec read_spec_file(char *specfile)
     }
 
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
-    for (i = 0; i < spec.NumberOfLargeParticles; i++)
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++)
     {
         spec.LargeParticles[i].size = LARGE;
         fscanf(fp,
@@ -103,6 +98,10 @@ Spec read_spec_file(char *specfile)
 
     // Debug print all read-in values.
     print_spec(spec);
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++)
+    {
+        print_particle(spec.LargeParticles[i]);
+    }
 
     // Clean up.
     fclose(fp);
@@ -115,15 +114,13 @@ Spec read_spec_file(char *specfile)
  */
 void print_spec(Spec spec)
 {
-    DEBUG_PRINT(("\033[0;36m"));
-    DEBUG_PRINT(("Specification:\n"));
-    DEBUG_PRINT(("+ TimeSlots: %ld\n", spec.TimeSlots));
-    DEBUG_PRINT(("+ TimeStep: %Lf\n", spec.TimeStep));
-    DEBUG_PRINT(("+ Horizon: %ld\n", spec.Horizon));
-    DEBUG_PRINT(("+ GridSize: %ld\n", spec.GridSize));
-    DEBUG_PRINT(("+ NumberOfSmallParticles: %lld\n", spec.NumberOfSmallParticles));
-    DEBUG_PRINT(("+ SmallParticleMass: %Lf\n", spec.SmallParticleMass));
-    DEBUG_PRINT(("+ SmallParticleRadius: %Lf\n", spec.SmallParticleRadius));
-    DEBUG_PRINT(("+ NumberOfLargeParticles: %lld\n", spec.NumberOfLargeParticles));
-    DEBUG_PRINT(("\033[0m\n"));
+    LL_VERBOSE("%s: ", "Specification");
+    LL_VERBOSE("TimeSlots: %ld", spec.TimeSlots);
+    LL_VERBOSE("TimeStep: %Lf", spec.TimeStep);
+    LL_VERBOSE("Horizon: %ld", spec.Horizon);
+    LL_VERBOSE("GridSize: %ld", spec.GridSize);
+    LL_VERBOSE("NumberOfSmallParticles: %lld", spec.NumberOfSmallParticles);
+    LL_VERBOSE("SmallParticleMass: %Lf", spec.SmallParticleMass);
+    LL_VERBOSE("SmallParticleRadius: %Lf", spec.SmallParticleRadius);
+    LL_VERBOSE("NumberOfLargeParticles: %lld", spec.NumberOfLargeParticles);
 }
