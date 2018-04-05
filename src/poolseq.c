@@ -43,8 +43,8 @@ void run_simulation(Spec spec, Particle *particles)
  */
 int main(int argc, char **argv)
 {
-    // Initialize MPI.
     multiproc_init(argc, argv);
+    set_log_level_env();
 
     // Only run on a single (master) process.
     if (is_master()) {
@@ -68,7 +68,6 @@ int main(int argc, char **argv)
         generate_heatmap(spec, particles, outputfile);
     }
 
-    // Clean up.
     multiproc_finalize();
     return 0;
 }

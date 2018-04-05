@@ -9,8 +9,6 @@
  */
 void check_arguments(int argc, char **argv, char *prog)
 {
-    set_log_level_env();
-
     if (argc != 3) {
         LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm", prog);
         exit(EXIT_FAILURE);
