@@ -42,6 +42,12 @@ You can increase the verbosity of the output by passing the `LOG_LEVEL` environm
 * **4 - VERBOSE**: Show some verbose messages
 * **5 - DEBUG**: Maximum verbosity
 
+For example, to increase the verbosity to VERBOSE, you can do
+
+```sh
+LOG_LEVEL=4 mpirun -np 64 pool initialspec.txt finalbrd.ppm
+```
+
 ### Variants
 
 Some variants of the program are included, which are listed below. All of the binaries take in the same command-line arguments as described above.
