@@ -92,14 +92,14 @@ int get_pool_length()
 void print_spec(Spec spec)
 {
     LL_VERBOSE("%s: ", "Loaded specification");
-    LL_VERBOSE("  TimeSlots: %ld", spec.TimeSlots);
-    LL_VERBOSE("  TimeStep: %Lf", spec.TimeStep);
-    LL_VERBOSE("  Horizon: %ld", spec.Horizon);
-    LL_VERBOSE("  GridSize: %ld", spec.GridSize);
-    LL_VERBOSE("  NumberOfSmallParticles: %lld", spec.NumberOfSmallParticles);
-    LL_VERBOSE("  SmallParticleMass: %Lf", spec.SmallParticleMass);
-    LL_VERBOSE("  SmallParticleRadius: %Lf", spec.SmallParticleRadius);
-    LL_VERBOSE("  NumberOfLargeParticles: %lld", spec.NumberOfLargeParticles);
+    LL_VERBOSE("- TimeSlots: %ld", spec.TimeSlots);
+    LL_VERBOSE("- TimeStep: %Lf", spec.TimeStep);
+    LL_VERBOSE("- Horizon: %ld", spec.Horizon);
+    LL_VERBOSE("- GridSize: %ld", spec.GridSize);
+    LL_VERBOSE("- NumberOfSmallParticles: %lld", spec.NumberOfSmallParticles);
+    LL_VERBOSE("- SmallParticleMass: %Lf", spec.SmallParticleMass);
+    LL_VERBOSE("- SmallParticleRadius: %Lf", spec.SmallParticleRadius);
+    LL_VERBOSE("- NumberOfLargeParticles: %lld", spec.NumberOfLargeParticles);
 
     LL_VERBOSE("%s: ", "Large particle data");
     for (int i = 0; i < spec.NumberOfLargeParticles; i++)

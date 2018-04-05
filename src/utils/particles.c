@@ -157,7 +157,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 void print_particle(Particle particle)
 {
     LL_VERBOSE(
-        "  Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
+        "- Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
         particle.size,
         particle.mass,
         particle.radius,

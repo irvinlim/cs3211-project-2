@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include <time.h>
 
 enum
 {
@@ -20,17 +21,22 @@ extern const char *log_level_labels[];
 extern const char *log_level_colors[];
 extern const char color_end[];
 
-#define LOG(level, fmt, arg...)                \
-    do                                         \
-    {                                          \
-        if (level <= log_level)                \
-        {                                      \
-            fprintf(stderr, "%s%s" fmt "%s\n", \
-                    log_level_colors[level],   \
-                    log_level_labels[level],   \
-                    arg,                       \
-                    color_end);                \
-        }                                      \
+#define LOG(level, fmt, arg...)                                             \
+    do                                                                      \
+    {                                                                       \
+        if (level <= log_level)                                             \
+        {                                                                   \
+            time_t timer;                                                   \
+            char time_str[26];                                              \
+            time(&timer);                                                   \
+            strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", localtime(&timer)); \
+            fprintf(stderr, "%s[%s] %s" fmt "%s\n",                         \
+                    log_level_colors[level],                                \
+                    time_str,                                               \
+                    log_level_labels[level],                                \
+                    arg,                                                    \
+                    color_end);                                             \
+        }                                                                   \
     } while (0)
 
 #define LL(fmt, arg...) LOG(LOG_LEVEL_NONE, fmt, arg)

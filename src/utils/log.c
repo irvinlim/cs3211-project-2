@@ -11,8 +11,8 @@ const char *log_level_labels[] = {
     "ERROR: ",
     "SUCCESS: ",
     "NOTICE: ",
-    "+ ",
-    "- ",
+    "",
+    "",
 };
 
 // Log level colors.
