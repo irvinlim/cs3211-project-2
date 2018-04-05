@@ -6,8 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 
-enum
-{
+enum {
     LOG_LEVEL_NONE,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_SUCCESS,
@@ -22,20 +21,18 @@ extern const char *log_level_colors[];
 extern const char color_end[];
 
 #define LOG(level, fmt, arg...)                                             \
-    do                                                                      \
-    {                                                                       \
-        if (level <= log_level)                                             \
-        {                                                                   \
+    do {                                                                    \
+        if (level <= log_level) {                                           \
             time_t timer;                                                   \
             char time_str[26];                                              \
             time(&timer);                                                   \
             strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", localtime(&timer)); \
             fprintf(stderr, "%s[%s] %s" fmt "%s\n",                         \
-                    log_level_colors[level],                                \
-                    time_str,                                               \
-                    log_level_labels[level],                                \
-                    arg,                                                    \
-                    color_end);                                             \
+                log_level_colors[level],                                    \
+                time_str,                                                   \
+                log_level_labels[level],                                    \
+                arg,                                                        \
+                color_end);                                                 \
         }                                                                   \
     } while (0)
 

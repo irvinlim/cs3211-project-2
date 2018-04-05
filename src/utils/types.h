@@ -12,8 +12,7 @@ typedef enum particle_size_t {
 /**
  * Data structure for a large particle.
  */
-typedef struct particle_t
-{
+typedef struct particle_t {
     // Type of particle (large or small).
     ParticleSize size;
 
@@ -33,8 +32,7 @@ typedef struct particle_t
 /**
  * Data structure for the specification file.
  */
-typedef struct spec_t
-{
+typedef struct spec_t {
     // Number of iterations to compute.
     long TimeSlots;
 

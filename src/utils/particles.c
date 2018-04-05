@@ -1,11 +1,11 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
 
-#include "particles.h"
 #include "log.h"
+#include "particles.h"
 
 #define BITMAP_MAX 255
 
@@ -64,8 +64,7 @@ int **generate_canvas(Spec spec, Particle *particles)
         canvas[i] = (int *)calloc(canvas_length, sizeof(int));
 
     // Iterate through all particles.
-    for (long i = 0; i < spec.TotalNumberOfParticles; i++)
-    {
+    for (long i = 0; i < spec.TotalNumberOfParticles; i++) {
         Particle p = particles[i];
 
         // Round up the coordinates of the particle's radius to find bounding box.
@@ -73,19 +72,15 @@ int **generate_canvas(Spec spec, Particle *particles)
 
         // Iterate through all pixels occupied by the particle using simple
         // radius checking in the bounding box.
-        for (long j = -r; j <= r; j++)
-        {
-            for (long k = -r; k <= r; k++)
-            {
-                if (j * j + k * k <= p.radius * p.radius)
-                {
+        for (long j = -r; j <= r; j++) {
+            for (long k = -r; k <= r; k++) {
+                if (j * j + k * k <= p.radius * p.radius) {
                     // Get the coordinates relative to the origin.
                     long x = p.x + k;
                     long y = p.y + j;
 
                     // Prevent drawing outside of the bounds of the array.
-                    if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length)
-                        continue;
+                    if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length) continue;
 
                     // If the particle size is large, we immediately set the value to BITMAP_MAX + 1.
                     // Otherwise, we will increment the value, up to BITMAP_MAX.
@@ -111,8 +106,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 
     // Open file for writing.
     FILE *fp = fopen(outputfile, "w");
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         LL_ERROR("Could not open %s for writing!", outputfile);
         exit(EXIT_FAILURE);
     }
@@ -124,10 +118,8 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     int **canvas = generate_canvas(spec, particles);
 
     // Print each cell.
-    for (int y = 0; y < canvas_length; y++)
-    {
-        for (int x = 0; x < canvas_length; x++)
-        {
+    for (int y = 0; y < canvas_length; y++) {
+        for (int x = 0; x < canvas_length; x++) {
             // If the value is greater than BITMAP_MAX, we draw a blue pixel.
             // Otherwise, we draw a red pixel whose intensity is the value.
             if (canvas[y][x] > BITMAP_MAX)
@@ -168,8 +160,7 @@ void print_particle(Particle particle)
  */
 void print_particles(long long n, Particle *particles)
 {
-    if (log_level < LOG_LEVEL_DEBUG)
-        return;
+    if (log_level < LOG_LEVEL_DEBUG) return;
 
     LL_DEBUG("%s: ", "Generated particles");
 

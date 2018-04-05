@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 
-#include "log.h"
 #include "common.h"
+#include "log.h"
 
 /** 
  * Determines the current time.
@@ -29,8 +29,7 @@ void check_arguments(int argc, char **argv, char *prog)
 {
     set_log_level_env();
 
-    if (argc != 3)
-    {
+    if (argc != 3) {
         LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm", prog);
         exit(EXIT_FAILURE);
     }

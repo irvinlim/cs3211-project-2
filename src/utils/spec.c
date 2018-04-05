@@ -1,12 +1,12 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
-#include "types.h"
+#include "log.h"
 #include "multiproc.h"
 #include "particles.h"
 #include "spec.h"
-#include "log.h"
+#include "types.h"
 
 /**
  * Reads the specification file.
@@ -15,8 +15,7 @@ Spec read_spec_file(char *specfile)
 {
     // Open the specification file.
     FILE *fp = fopen(specfile, "r");
-    if (fp == NULL)
-    {
+    if (fp == NULL) {
         LL_ERROR("%s not found!", specfile);
         exit(EXIT_FAILURE);
     }
@@ -29,43 +28,41 @@ Spec read_spec_file(char *specfile)
     // Read specification lines.
     // Assumes that values are in fixed format.
     fscanf(fp,
-           "TimeSlots: %ld\n"
-           "TimeStep: %Lf\n"
-           "Horizon: %ld\n"
-           "GridSize: %ld\n"
-           "NumberOfSmallParticles: %lld\n"
-           "SmallParticleMass: %Lf\n"
-           "SmallParticleRadius: %Lf\n"
-           "NumberOfLargeParticles: %lld\n",
-           &spec.TimeSlots,
-           &spec.TimeStep,
-           &spec.Horizon,
-           &spec.GridSize,
-           &spec.NumberOfSmallParticles,
-           &spec.SmallParticleMass,
-           &spec.SmallParticleRadius,
-           &spec.NumberOfLargeParticles);
+        "TimeSlots: %ld\n"
+        "TimeStep: %Lf\n"
+        "Horizon: %ld\n"
+        "GridSize: %ld\n"
+        "NumberOfSmallParticles: %lld\n"
+        "SmallParticleMass: %Lf\n"
+        "SmallParticleRadius: %Lf\n"
+        "NumberOfLargeParticles: %lld\n",
+        &spec.TimeSlots,
+        &spec.TimeStep,
+        &spec.Horizon,
+        &spec.GridSize,
+        &spec.NumberOfSmallParticles,
+        &spec.SmallParticleMass,
+        &spec.SmallParticleRadius,
+        &spec.NumberOfLargeParticles);
 
     // Calculate total number of particles.
     spec.TotalNumberOfParticles = spec.NumberOfSmallParticles + spec.NumberOfLargeParticles;
 
     // Read large particle values, according to NumberOfLargeParticles.
-    if (spec.NumberOfLargeParticles < 0)
-    {
+    if (spec.NumberOfLargeParticles < 0) {
         LL_ERROR("%s", "NumberOfLargeParticles cannot be negative!");
         exit(EXIT_FAILURE);
     }
 
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
-    for (int i = 0; i < spec.NumberOfLargeParticles; i++)
-    {
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
         spec.LargeParticles[i].size = LARGE;
         fscanf(fp,
-               "%Lf %Lf %Lf %Lf\n",
-               &spec.LargeParticles[i].mass,
-               &spec.LargeParticles[i].radius,
-               &spec.LargeParticles[i].x,
-               &spec.LargeParticles[i].y);
+            "%Lf %Lf %Lf %Lf\n",
+            &spec.LargeParticles[i].mass,
+            &spec.LargeParticles[i].radius,
+            &spec.LargeParticles[i].x,
+            &spec.LargeParticles[i].y);
     }
 
     // Debug print all read-in values.
@@ -76,7 +73,7 @@ Spec read_spec_file(char *specfile)
     long grid_size = spec.GridSize;
     long canvas_size = spec.GridSize * spec.PoolLength;
     LL_NOTICE("Generated %lld particles in %d regions of size %ldx%ld each; Total canvas size is %ldx%ld.",
-              spec.TotalNumberOfParticles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
+        spec.TotalNumberOfParticles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
 
     // Clean up.
     fclose(fp);

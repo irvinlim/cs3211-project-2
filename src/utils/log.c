@@ -31,7 +31,5 @@ const char color_end[] = "\033[0m";
 void set_log_level_env()
 {
     char *env = getenv("LOG_LEVEL");
-
-    if (env != NULL)
-        log_level = (char)atoi(env);
+    if (env != NULL) log_level = (char)atoi(env);
 }

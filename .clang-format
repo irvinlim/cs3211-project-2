@@ -1,0 +1,8 @@
+Language: Cpp
+BasedOnStyle: WebKit
+
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+PointerAlignment: Right
+ReflowComments: true
+SortIncludes: true

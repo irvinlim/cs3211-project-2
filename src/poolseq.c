@@ -28,8 +28,7 @@ int main(int argc, char **argv)
     multiproc_init(argc, argv);
 
     // Only run on a single (master) process.
-    if (is_master())
-    {
+    if (is_master()) {
         LL_NOTICE("Starting %s with %d regions on 1 processor...", PROG, get_num_cores());
 
         // Parse arguments.

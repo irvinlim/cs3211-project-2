@@ -1,6 +1,7 @@
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
+
 #include "utils/common.h"
 
 #define PROG "poolseq"

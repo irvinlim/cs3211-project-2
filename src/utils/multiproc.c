@@ -1,10 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 #include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "multiproc.h"
 #include "log.h"
+#include "multiproc.h"
 
 #define MASTER_ID 0
 
@@ -44,8 +44,7 @@ int get_num_cores()
     // Fail if the number of cores is not a perfect square.
     int np_sqrt = sqrt(size);
 
-    if (np_sqrt * np_sqrt != size)
-    {
+    if (np_sqrt * np_sqrt != size) {
         LL_ERROR("Number of processes %d must be a perfect square!", size);
         exit(EXIT_FAILURE);
     }
