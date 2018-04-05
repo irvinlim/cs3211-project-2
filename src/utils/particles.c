@@ -68,10 +68,8 @@ int **generate_canvas(Spec spec, Particle *particles)
     {
         Particle p = particles[i];
 
-        // Round down the coordinates of the particle's origin and radius.
-        long x0 = floor(p.x);
-        long y0 = floor(p.y);
-        long r = floor(p.radius);
+        // Round up the coordinates of the particle's radius to find bounding box.
+        long r = ceil(p.radius);
 
         // Iterate through all pixels occupied by the particle using simple
         // radius checking in the bounding box.
@@ -79,11 +77,11 @@ int **generate_canvas(Spec spec, Particle *particles)
         {
             for (long k = -r; k <= r; k++)
             {
-                if (j * j + k * k <= r * r)
+                if (j * j + k * k <= p.radius * p.radius)
                 {
                     // Get the coordinates relative to the origin.
-                    long x = x0 + k;
-                    long y = y0 + j;
+                    long x = p.x + k;
+                    long y = p.y + j;
 
                     // Prevent drawing outside of the bounds of the array.
                     if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length)
