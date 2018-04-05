@@ -112,7 +112,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     FILE *fp = fopen(outputfile, "w");
     if (fp == NULL)
     {
-        fprintf(stderr, "\033[0;31mERROR:\033[0m Could not open %s for writing!\n", outputfile);
+        LL_ERROR("Could not open %s for writing!", outputfile);
         exit(EXIT_FAILURE);
     }
 
