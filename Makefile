@@ -4,8 +4,8 @@ LDIR=$(IDIR)/utils
 CC=mpicc
 CFLAGS=-Wall
 
-DEPS=$(LDIR)/common.h $(LDIR)/spec.h $(LDIR)/particles.h $(LDIR)/log.h
-LIBS=$(LDIR)/common.o $(LDIR)/spec.o $(LDIR)/particles.o $(LDIR)/log.o
+DEPS=$(LDIR)/common.h $(LDIR)/multiproc.h $(LDIR)/spec.h $(LDIR)/particles.h $(LDIR)/log.h
+LIBS=$(LDIR)/common.o $(LDIR)/multiproc.o $(LDIR)/spec.o $(LDIR)/particles.o $(LDIR)/log.o
 
 POOL_OBJS=$(IDIR)/pool.c $(LIBS)
 POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LIBS)

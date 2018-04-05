@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
+#include <math.h>
 
 #include "types.h"
+#include "multiproc.h"
 #include "particles.h"
 #include "spec.h"
 #include "log.h"
@@ -22,7 +23,7 @@ Spec read_spec_file(char *specfile)
 
     // Create SPEC struct.
     Spec spec = {
-        .PoolLength = 1,
+        .PoolLength = get_pool_length(),
     };
 
     // Read specification lines.
@@ -74,6 +75,15 @@ Spec read_spec_file(char *specfile)
     fclose(fp);
 
     return spec;
+}
+
+/**
+ * Returns the length of the size of the pool.
+ */
+int get_pool_length()
+{
+    // Return the square root of the number of cores as the pool length.
+    return (int)sqrt(get_num_cores());
 }
 
 /**

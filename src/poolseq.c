@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "utils/common.h"
+#include "utils/log.h"
+#include "utils/multiproc.h"
 #include "utils/particles.h"
 
 #define PROG "poolseq"
@@ -13,25 +16,41 @@ void run_simulation(Particle *particles, Spec spec)
 {
 }
 
+/**
+ * For the sequential version of the program, we will run the 
+ * entire procedure on a single process, although the number of
+ * cores (supplied by the -np flag) will be used to determine the
+ * number of regions that should be computed.
+ */
 int main(int argc, char **argv)
 {
-    // Parse arguments.
-    check_arguments(argc, argv, PROG);
-    char *specfile = argv[1];
-    char *outputfile = argv[2];
+    // Initialize MPI.
+    multiproc_init(argc, argv);
 
-    // Read the specification file into a struct.
-    Spec spec = read_spec_file(specfile);
+    // Only run on a single (master) process.
+    if (is_master())
+    {
+        LL_NOTICE("Starting %s with %d regions on 1 processor...", PROG, get_num_cores());
 
-    // Generate the particles.
-    Particle *particles = generate_particles(spec);
+        // Parse arguments.
+        check_arguments(argc, argv, PROG);
+        char *specfile = argv[1];
+        char *outputfile = argv[2];
 
-    // Run the simulation.
-    run_simulation(particles, spec);
+        // Read the specification file into a struct.
+        Spec spec = read_spec_file(specfile);
 
-    // Generate the heatmap.
-    generate_heatmap(spec, particles, outputfile);
+        // Generate the particles.
+        Particle *particles = generate_particles(spec);
+
+        // Run the simulation.
+        run_simulation(particles, spec);
+
+        // Generate the heatmap.
+        generate_heatmap(spec, particles, outputfile);
+    }
 
     // Clean up.
-    exit(EXIT_SUCCESS);
+    multiproc_finalize();
+    return 0;
 }
