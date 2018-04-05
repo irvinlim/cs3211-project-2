@@ -71,6 +71,13 @@ Spec read_spec_file(char *specfile)
     // Debug print all read-in values.
     print_spec(spec);
 
+    // Print info about canvas size.
+    int num_grids = spec.PoolLength * spec.PoolLength;
+    long grid_size = spec.GridSize;
+    long canvas_size = spec.GridSize * spec.PoolLength;
+    LL_NOTICE("Generated %lld particles in %d regions of size %ldx%ld each; Total canvas size is %ldx%ld.",
+              spec.TotalNumberOfParticles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
+
     // Clean up.
     fclose(fp);
 
