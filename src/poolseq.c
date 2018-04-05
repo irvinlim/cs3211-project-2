@@ -12,8 +12,19 @@
 /**
  * Runs the simulation according to the provided specifications.
  */
-void run_simulation(Particle *particles, Spec spec)
+void run_simulation(Spec spec, Particle *particles)
 {
+    LL_NOTICE("Simulation is starting on %d core(s).", 1);
+
+    for (long i = 0; i < spec.TimeSlots; i++) {
+        // TODO: Run simulation
+
+        // Get timing and log.
+        LL_VERBOSE("Completed iteration %ld.", i + 1);
+    }
+
+    // Get timing and log.
+    LL_NOTICE("Simulation completed after %ld iteration(s).", spec.TimeSlots);
 }
 
 /**
@@ -29,7 +40,7 @@ int main(int argc, char **argv)
 
     // Only run on a single (master) process.
     if (is_master()) {
-        LL_NOTICE("Starting %s with %d regions on 1 processor...", PROG, get_num_cores());
+        LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), 1);
 
         // Parse arguments.
         check_arguments(argc, argv, PROG);
@@ -43,7 +54,7 @@ int main(int argc, char **argv)
         Particle *particles = generate_particles(spec);
 
         // Run the simulation.
-        run_simulation(particles, spec);
+        run_simulation(spec, particles);
 
         // Generate the heatmap.
         generate_heatmap(spec, particles, outputfile);
