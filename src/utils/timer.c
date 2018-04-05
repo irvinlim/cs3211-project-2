@@ -24,5 +24,5 @@ long long wall_clock_time()
  */
 void format_time(char *time_str, size_t len, long long nanoseconds)
 {
-    snprintf(time_str, len, "%0.6f seconds", nanoseconds / 1000000000.0);
+    snprintf(time_str, len, "%0.6f", nanoseconds / 1000000000.0);
 }

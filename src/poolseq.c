@@ -9,13 +9,14 @@
 #include "utils/timer.h"
 
 #define PROG "poolseq"
+#define TIMEBUF_LENGTH 10
 
 /**
  * Runs the simulation according to the provided specifications.
  */
 void run_simulation(Spec spec, Particle *particles)
 {
-    char time_passed[20];
+    char time_passed[TIMEBUF_LENGTH];
     long long total_time = 0;
     LL_NOTICE("Simulation is starting on %d core(s).", 1);
 
@@ -28,17 +29,17 @@ void run_simulation(Spec spec, Particle *particles)
         // Get timing and log.
         long long end = wall_clock_time();
         total_time += end - start;
-        format_time(time_passed, 20, end - start);
-        LL_VERBOSE("Completed iteration %4.0ld in %s.", i + 1, time_passed);
+        format_time(time_passed, TIMEBUF_LENGTH, end - start);
+        LL_VERBOSE("Completed iteration %4.0ld in %s seconds", i + 1, time_passed);
     }
 
     // Get timing and log.
     LL_NOTICE("Simulation completed in %ld iteration(s).", spec.TimeSlots);
 
-    format_time(time_passed, 20, total_time);
-    LL_NOTICE("Total running time: %s.", time_passed);
-    format_time(time_passed, 20, total_time / spec.TimeSlots);
-    LL_NOTICE("Average time per iteration: %s.", time_passed);
+    format_time(time_passed, TIMEBUF_LENGTH, total_time);
+    LL_NOTICE("Total running time: %s seconds", time_passed);
+    format_time(time_passed, TIMEBUF_LENGTH, total_time / spec.TimeSlots);
+    LL_NOTICE("Average time per iteration: %s seconds", time_passed);
 }
 
 /**
