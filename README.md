@@ -22,10 +22,25 @@ make
 You can then run the program by calling the binary executable with `mpirun`, where `initialspec.txt` is a path to the specification file, and `finalbrd.ppm` is the path of the output PPM image file:
 
 ```sh
-mpirun -np 64 ./pool initialspec.txt finalbrd.ppm
+mpirun -np 64 pool initialspec.txt finalbrd.ppm
 ```
 
-Change the value of the `np` flag to specify the number of processes that the simulation should run on.
+See `initialspec-example.txt` for an example of how the specification file should look like.
+
+Change the value of the `np` flag to specify the number of regions that should be simulated. For the sequential version, only the master process will be working, while the parallel version will split the work up amongst all processes.
+
+As such, the value of `np` **must be a perfect square**, e.g. 1, 4, 9, 16, 25, etc., since the "pool table" is a square.
+
+### Verbosity
+
+You can increase the verbosity of the output by passing the `LOG_LEVEL` environment variable, according to the following list:
+
+* **0 - NONE**: Suppress all output
+* **1 - ERROR**: Only show errors
+* **2 - SUCCESS**: Also show success messages
+* **3 - NOTICE (Default)**: Also show notices
+* **4 - VERBOSE**: Show some verbose messages
+* **5 - DEBUG**: Maximum verbosity
 
 ### Variants
 
