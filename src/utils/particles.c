@@ -26,14 +26,17 @@ Particle *generate_particles(Spec spec)
     // Copy large particles from spec.
     memcpy(particles, spec.LargeParticles, spec.NumberOfLargeParticles * sizeof(Particle));
 
+    // Get canvas length.
+    long canvas_length = spec.GridSize * spec.PoolLength;
+
     // Generate small particles at random starting locations.
     for (i = spec.NumberOfLargeParticles; i < spec.TotalNumberOfParticles; i++)
         particles[i] = (Particle){
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,
-            .x = rand() % spec.GridSize,
-            .y = rand() % spec.GridSize,
+            .x = rand() % canvas_length,
+            .y = rand() % canvas_length,
         };
 
     // Debug print all particles.
