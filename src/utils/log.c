@@ -1,4 +1,5 @@
 #include <stdlib.h>
+
 #include "log.h"
 
 // Define the log level here.
