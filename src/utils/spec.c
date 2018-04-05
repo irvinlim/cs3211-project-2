@@ -59,8 +59,8 @@ Spec read_spec_file(char *specfile)
         spec.LargeParticles[i].size = LARGE;
         fscanf(fp,
             "%Lf %Lf %Lf %Lf\n",
-            &spec.LargeParticles[i].mass,
             &spec.LargeParticles[i].radius,
+            &spec.LargeParticles[i].mass,
             &spec.LargeParticles[i].x,
             &spec.LargeParticles[i].y);
     }
