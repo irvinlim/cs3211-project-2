@@ -74,7 +74,7 @@ int **generate_canvas(Spec spec, Particle *particles)
         // radius checking in the bounding box.
         for (long j = -r; j <= r; j++) {
             for (long k = -r; k <= r; k++) {
-                if (j * j + k * k <= p.radius * p.radius) {
+                if (j * j + k * k < p.radius * p.radius) {
                     // Get the coordinates relative to the origin.
                     long x = p.x + k;
                     long y = p.y + j;
