@@ -3,8 +3,13 @@
 #include <stdlib.h>
 
 #include "utils/common.h"
+#include "utils/log.h"
+#include "utils/multiproc.h"
+#include "utils/particles.h"
+#include "utils/spec.h"
+#include "utils/timer.h"
 
-#define PROG "poolseq"
+#define PROG "pool"
 
 /**
  * Runs the simulation according to the provided specifications.

@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "utils/common.h"
 #include "utils/log.h"
 #include "utils/multiproc.h"
 #include "utils/particles.h"
+#include "utils/spec.h"
+#include "utils/timer.h"
 
 #define PROG "poolseq"
 
@@ -14,17 +15,24 @@
  */
 void run_simulation(Spec spec, Particle *particles)
 {
+    char time_passed[10];
+    long long simul_start = wall_clock_time();
     LL_NOTICE("Simulation is starting on %d core(s).", 1);
 
     for (long i = 0; i < spec.TimeSlots; i++) {
+        // Start timer.
+        long long start = wall_clock_time();
+
         // TODO: Run simulation
 
         // Get timing and log.
-        LL_VERBOSE("Completed iteration %ld.", i + 1);
+        get_time_passed(time_passed, start);
+        LL_VERBOSE("Completed iteration %ld in %s seconds.", i + 1, time_passed);
     }
 
     // Get timing and log.
-    LL_NOTICE("Simulation completed after %ld iteration(s).", spec.TimeSlots);
+    get_time_passed(time_passed, simul_start);
+    LL_NOTICE("Simulation complete: %ld iteration(s) performed in %s seconds.", spec.TimeSlots, time_passed);
 }
 
 /**
