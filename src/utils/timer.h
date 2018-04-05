@@ -4,6 +4,6 @@
 long long wall_clock_time();
 
 /**
- * Returns the time passed relative to a given start time in seconds.
+ * Returns a formatted string of nanoseconds in seconds.
  */
-void get_time_passed(char *time_str, long long start_time);
+void format_time(char *time_str, size_t len, long long nanoseconds);

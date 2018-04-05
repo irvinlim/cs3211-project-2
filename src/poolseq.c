@@ -15,8 +15,8 @@
  */
 void run_simulation(Spec spec, Particle *particles)
 {
-    char time_passed[10];
-    long long simul_start = wall_clock_time();
+    char time_passed[20];
+    long long total_time = 0;
     LL_NOTICE("Simulation is starting on %d core(s).", 1);
 
     for (long i = 0; i < spec.TimeSlots; i++) {
@@ -26,13 +26,19 @@ void run_simulation(Spec spec, Particle *particles)
         // TODO: Run simulation
 
         // Get timing and log.
-        get_time_passed(time_passed, start);
-        LL_VERBOSE("Completed iteration %ld in %s seconds.", i + 1, time_passed);
+        long long end = wall_clock_time();
+        total_time += end - start;
+        format_time(time_passed, 20, end - start);
+        LL_VERBOSE("Completed iteration %4.0ld in %s.", i + 1, time_passed);
     }
 
     // Get timing and log.
-    get_time_passed(time_passed, simul_start);
-    LL_NOTICE("Simulation complete: %ld iteration(s) performed in %s seconds.", spec.TimeSlots, time_passed);
+    LL_NOTICE("Simulation completed in %ld iteration(s).", spec.TimeSlots);
+
+    format_time(time_passed, 20, total_time);
+    LL_NOTICE("Total running time: %s.", time_passed);
+    format_time(time_passed, 20, total_time / spec.TimeSlots);
+    LL_NOTICE("Average time per iteration: %s.", time_passed);
 }
 
 /**
