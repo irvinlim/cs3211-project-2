@@ -117,7 +117,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     }
 
     // Print PPM header.
-    fprintf(fp, "P3\n%ld %ld\n%d\n", spec.GridSize, spec.GridSize, BITMAP_MAX);
+    fprintf(fp, "P3\n%ld %ld\n%d\n", canvas_length, canvas_length, BITMAP_MAX);
 
     // Generate canvas from the list of particles.
     int **canvas = generate_canvas(spec, particles);
