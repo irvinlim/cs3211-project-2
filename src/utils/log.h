@@ -20,19 +20,20 @@ extern const char *log_level_labels[];
 extern const char *log_level_colors[];
 extern const char color_end[];
 
-#define LOG(level, fmt, arg...)                 \
-    do                                          \
-    {                                           \
-        if (level <= log_level)                 \
-        {                                       \
-            fprintf(stderr, "%s%s " fmt "%s\n", \
-                    log_level_colors[level],    \
-                    log_level_labels[level],    \
-                    arg,                        \
-                    color_end);                 \
-        }                                       \
+#define LOG(level, fmt, arg...)                \
+    do                                         \
+    {                                          \
+        if (level <= log_level)                \
+        {                                      \
+            fprintf(stderr, "%s%s" fmt "%s\n", \
+                    log_level_colors[level],   \
+                    log_level_labels[level],   \
+                    arg,                       \
+                    color_end);                \
+        }                                      \
     } while (0)
 
+#define LL(fmt, arg...) LOG(LOG_LEVEL_NONE, fmt, arg)
 #define LL_DEBUG(fmt, arg...) LOG(LOG_LEVEL_DEBUG, fmt, arg)
 #define LL_VERBOSE(fmt, arg...) LOG(LOG_LEVEL_VERBOSE, fmt, arg)
 #define LL_NOTICE(fmt, arg...) LOG(LOG_LEVEL_NOTICE, fmt, arg)

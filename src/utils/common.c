@@ -31,7 +31,7 @@ void check_arguments(int argc, char **argv, char *prog)
 {
     if (argc != 3)
     {
-        fprintf(stderr, "\033[0;32mUsage:\033[0m mpirun %s specfile.txt outputfile.ppm\n", prog);
+        LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm", prog);
         exit(EXIT_FAILURE);
     }
 }
@@ -45,7 +45,7 @@ Spec read_spec_file(char *specfile)
     FILE *fp = fopen(specfile, "r");
     if (fp == NULL)
     {
-        fprintf(stderr, "\033[0;31mERROR:\033[0m %s not found!\n", specfile);
+        LL_ERROR("%s not found!", specfile);
         exit(EXIT_FAILURE);
     }
 
@@ -80,7 +80,7 @@ Spec read_spec_file(char *specfile)
     // Read large particle values, according to NumberOfLargeParticles.
     if (spec.NumberOfLargeParticles < 0)
     {
-        fprintf(stderr, "\033[0;31mERROR:\033[0m NumberOfLargeParticles cannot be negative!\n");
+        LL_ERROR("%s", "NumberOfLargeParticles cannot be negative!");
         exit(EXIT_FAILURE);
     }
 

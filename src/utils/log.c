@@ -6,11 +6,11 @@ unsigned char log_level = LOG_LEVEL_VERBOSE;
 // Log level labels.
 const char *log_level_labels[] = {
     "",
-    "ERROR:",
-    "SUCCESS:",
-    "NOTICE:",
-    "+",
-    "-",
+    "ERROR: ",
+    "SUCCESS: ",
+    "NOTICE: ",
+    "+ ",
+    "- ",
 };
 
 // Log level colors.
