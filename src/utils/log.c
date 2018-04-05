@@ -1,7 +1,8 @@
+#include <stdlib.h>
 #include "log.h"
 
 // Define the log level here.
-unsigned char log_level = LOG_LEVEL_VERBOSE;
+unsigned char log_level = LOG_LEVEL_NOTICE;
 
 // Log level labels.
 const char *log_level_labels[] = {
@@ -24,3 +25,12 @@ const char *log_level_colors[] = {
 };
 
 const char color_end[] = "\033[0m";
+
+// The log level can be overwritten by the LOG_LEVEL environment variable.
+void set_log_level_env()
+{
+    char *env = getenv("LOG_LEVEL");
+
+    if (env != NULL)
+        log_level = (char)atoi(env);
+}

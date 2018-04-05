@@ -39,3 +39,6 @@ extern const char color_end[];
 #define LL_NOTICE(fmt, arg...) LOG(LOG_LEVEL_NOTICE, fmt, arg)
 #define LL_SUCCESS(fmt, arg...) LOG(LOG_LEVEL_SUCCESS, fmt, arg)
 #define LL_ERROR(fmt, arg...) LOG(LOG_LEVEL_ERROR, fmt, arg)
+
+// The log level can be overwritten by the LOG_LEVEL environment variable.
+void set_log_level_env();
