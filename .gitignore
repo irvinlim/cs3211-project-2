@@ -37,3 +37,6 @@
 
 # Output files
 *.ppm
+
+# Spec file
+initialspec.txt
