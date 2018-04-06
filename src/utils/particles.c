@@ -14,7 +14,6 @@
  */
 Particle *generate_particles(Spec spec)
 {
-    long long i;
     time_t t;
 
     // Initialize PRNG.
@@ -26,18 +25,28 @@ Particle *generate_particles(Spec spec)
     // Copy large particles from spec.
     memcpy(particles, spec.LargeParticles, spec.NumberOfLargeParticles * sizeof(Particle));
 
+    // Fill missing values for large particles.
+    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
+        particles[i].size = LARGE;
+        particles[i].vx = 0.0L;
+        particles[i].vy = 0.0L;
+    }
+
     // Get canvas length.
     long canvas_length = spec.GridSize * spec.PoolLength;
 
     // Generate small particles at random starting locations.
-    for (i = spec.NumberOfLargeParticles; i < spec.TotalNumberOfParticles; i++)
+    for (long long i = spec.NumberOfLargeParticles; i < spec.TotalNumberOfParticles; i++) {
         particles[i] = (Particle){
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,
             .x = rand() % canvas_length,
             .y = rand() % canvas_length,
+            .vx = 0.0L,
+            .vy = 0.0L,
         };
+    }
 
     // Debug print all particles.
     print_particles(spec.TotalNumberOfParticles, particles);
@@ -162,14 +171,16 @@ void print_particles(long long n, Particle *particles)
 {
     if (log_level < LOG_LEVEL_DEBUG) return;
 
-    LL_DEBUG("%s: ", "Generated particles");
+    LL_DEBUG("Dump of all %lld particles: ", n);
 
     for (long long i = 0; i < n; i++)
         LL_DEBUG(
-            "  Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf)",
+            "+ Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf); Velocity: (%Lf, %Lf)",
             particles[i].size,
             particles[i].mass,
             particles[i].radius,
             particles[i].x,
-            particles[i].y);
+            particles[i].y,
+            particles[i].vx,
+            particles[i].vy);
 }

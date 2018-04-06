@@ -22,11 +22,13 @@ typedef struct particle_t {
     // Radius of the particle.
     long double radius;
 
-    // Location x-coordinate.
+    // Location coordinates
     long double x;
-
-    // Location y-coordinate.
     long double y;
+
+    // Velocity
+    long double vx;
+    long double vy;
 } Particle;
 
 /**

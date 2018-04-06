@@ -8,6 +8,8 @@
 #include "utils/spec.h"
 #include "utils/timer.h"
 
+#include "simulation/nbody.h"
+
 #define PROG "poolseq"
 #define TIMEBUF_LENGTH 10
 
@@ -24,7 +26,11 @@ void run_simulation(Spec spec, Particle *particles)
         // Start timer.
         long long start = wall_clock_time();
 
-        // TODO: Run simulation
+        // Compute the new velocity for this timestep.
+        update_velocity(particles, spec.TotalNumberOfParticles, spec.TimeStep);
+
+        // Update the position of all particles.
+        update_position(particles, spec.TotalNumberOfParticles, spec.TimeStep);
 
         // Get timing and log.
         long long end = wall_clock_time();
@@ -40,6 +46,8 @@ void run_simulation(Spec spec, Particle *particles)
     LL_NOTICE("Total running time: %s seconds", time_passed);
     format_time(time_passed, TIMEBUF_LENGTH, total_time / spec.TimeSlots);
     LL_NOTICE("Average time per iteration: %s seconds", time_passed);
+
+    print_particles(spec.TotalNumberOfParticles, particles);
 }
 
 /**

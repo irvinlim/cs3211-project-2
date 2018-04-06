@@ -56,7 +56,6 @@ Spec read_spec_file(char *specfile)
 
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
     for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
-        spec.LargeParticles[i].size = LARGE;
         fscanf(fp,
             "%Lf %Lf %Lf %Lf\n",
             &spec.LargeParticles[i].radius,
