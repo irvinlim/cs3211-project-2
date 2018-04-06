@@ -1,14 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "simulation/nbody.h"
 #include "utils/common.h"
 #include "utils/log.h"
 #include "utils/multiproc.h"
 #include "utils/particles.h"
 #include "utils/spec.h"
 #include "utils/timer.h"
-
-#include "simulation/nbody.h"
 
 #define PROG "poolseq"
 #define TIMEBUF_LENGTH 10
@@ -40,7 +39,7 @@ void run_simulation(Spec spec, Particle *particles)
     }
 
     // Get timing and log.
-    LL_NOTICE("Simulation completed in %ld iteration(s).", spec.TimeSlots);
+    LL_NOTICE("Simulation of %ld iteration(s) completed.", spec.TimeSlots);
 
     format_time(time_passed, TIMEBUF_LENGTH, total_time);
     LL_NOTICE("Total running time: %s seconds", time_passed);
