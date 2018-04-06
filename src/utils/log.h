@@ -12,6 +12,7 @@ enum {
     LOG_LEVEL_SUCCESS,
     LOG_LEVEL_NOTICE,
     LOG_LEVEL_VERBOSE,
+    LOG_LEVEL_MPI,
     LOG_LEVEL_DEBUG,
 };
 
@@ -38,6 +39,7 @@ extern const char color_end[];
 
 #define LL(fmt, arg...) LOG(LOG_LEVEL_NONE, fmt, arg)
 #define LL_DEBUG(fmt, arg...) LOG(LOG_LEVEL_DEBUG, fmt, arg)
+#define LL_MPI(fmt, arg...) LOG(LOG_LEVEL_MPI, fmt, arg)
 #define LL_VERBOSE(fmt, arg...) LOG(LOG_LEVEL_VERBOSE, fmt, arg)
 #define LL_NOTICE(fmt, arg...) LOG(LOG_LEVEL_NOTICE, fmt, arg)
 #define LL_SUCCESS(fmt, arg...) LOG(LOG_LEVEL_SUCCESS, fmt, arg)

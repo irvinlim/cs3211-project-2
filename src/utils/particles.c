@@ -10,43 +10,53 @@
 #define BITMAP_MAX 255
 
 /**
- * Generate all particles based on the provided specifications.
+ * Generates small particles in random starting locations,
+ * within the specified boundaries.
  */
-Particle *generate_particles(Spec spec)
+Particle *generate_small_particles(Spec spec, long long n, long grid_size, long double start_x, long double start_y)
 {
-    time_t t;
-
     // Initialize PRNG.
+    time_t t;
     srand((unsigned)time(&t));
 
-    // Generate particles.
-    Particle *particles = malloc(sizeof(Particle) * spec.TotalNumberOfParticles);
-
-    // Copy large particles from spec.
-    memcpy(particles, spec.LargeParticles, spec.NumberOfLargeParticles * sizeof(Particle));
-
-    // Fill missing values for large particles.
-    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
-        particles[i].size = LARGE;
-        particles[i].vx = 0.0L;
-        particles[i].vy = 0.0L;
-    }
-
-    // Get canvas length.
-    long canvas_length = spec.GridSize * spec.PoolLength;
+    // Allocate space for n particles.
+    Particle *particles = malloc(sizeof(Particle) * n);
 
     // Generate small particles at random starting locations.
-    for (long long i = spec.NumberOfLargeParticles; i < spec.TotalNumberOfParticles; i++) {
+    for (long long i = 0; i < 0; i++) {
         particles[i] = (Particle){
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,
-            .x = rand() % canvas_length,
-            .y = rand() % canvas_length,
+            .x = start_x + rand() % grid_size,
+            .y = start_y + rand() % grid_size,
             .vx = 0.0L,
             .vy = 0.0L,
         };
     }
+
+    return particles;
+}
+
+/**
+ * Generate all particles for all regions, according to the given spec.
+ */
+Particle *generate_particles(Spec spec)
+{
+    // Get canvas length.
+    long canvas_length = spec.GridSize * spec.PoolLength;
+
+    // Allocate space for all particles.
+    Particle *particles = malloc(sizeof(Particle) * spec.TotalNumberOfParticles);
+
+    // Copy large particles from spec.
+    size_t large_particles_len = spec.NumberOfLargeParticles * sizeof(Particle);
+    memcpy(particles, spec.LargeParticles, large_particles_len);
+
+    // Generate small particles and allocate to the buffer.
+    Particle *small_particles = generate_small_particles(spec, spec.NumberOfSmallParticles, canvas_length, 0, 0);
+    size_t small_particles_len = spec.NumberOfSmallParticles * sizeof(Particle);
+    memcpy(particles + large_particles_len, small_particles, small_particles_len);
 
     // Debug print all particles.
     print_particles(spec.TotalNumberOfParticles, particles);

@@ -55,7 +55,7 @@ Spec read_spec_file(char *specfile)
     }
 
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
-    for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
+    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
         fscanf(fp,
             "%Lf %Lf %Lf %Lf\n",
             &spec.LargeParticles[i].radius,
@@ -64,15 +64,12 @@ Spec read_spec_file(char *specfile)
             &spec.LargeParticles[i].y);
     }
 
-    // Debug print all read-in values.
-    print_spec(spec);
-
-    // Print info about canvas size.
-    int num_grids = spec.PoolLength * spec.PoolLength;
-    long grid_size = spec.GridSize;
-    long canvas_size = spec.GridSize * spec.PoolLength;
-    LL_NOTICE("Generated %lld particle(s) in %d region(s) of size %ldx%ld each; Total canvas size is %ldx%ld.",
-        spec.TotalNumberOfParticles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
+    // Fill missing values for large particles.
+    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
+        spec.LargeParticles[i].size = LARGE;
+        spec.LargeParticles[i].vx = 0.0L;
+        spec.LargeParticles[i].vy = 0.0L;
+    }
 
     // Clean up.
     fclose(fp);
@@ -103,8 +100,22 @@ void print_spec(Spec spec)
     LL_VERBOSE("- SmallParticleMass: %Lf", spec.SmallParticleMass);
     LL_VERBOSE("- SmallParticleRadius: %Lf", spec.SmallParticleRadius);
     LL_VERBOSE("- NumberOfLargeParticles: %lld", spec.NumberOfLargeParticles);
-
     LL_VERBOSE("%s: ", "Large particle data");
-    for (int i = 0; i < spec.NumberOfLargeParticles; i++)
+
+    for (long long i = 0; i < spec.NumberOfLargeParticles; i++)
         print_particle(spec.LargeParticles[i]);
+}
+
+/**
+ * Prints info about the canvas.
+ */
+void print_canvas_info(Spec spec)
+{
+    // Print info about canvas size.
+    long long total_particles = spec.TotalNumberOfParticles;
+    int num_grids = spec.PoolLength * spec.PoolLength;
+    long grid_size = spec.GridSize;
+    long canvas_size = spec.GridSize * spec.PoolLength;
+    LL_NOTICE("Generated %lld particle(s) in %d region(s) of size %ldx%ld each; Total canvas size is %ldx%ld.",
+        total_particles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
 }

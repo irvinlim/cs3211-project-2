@@ -67,3 +67,11 @@ int is_master()
 {
     return get_process_id() == MASTER_ID;
 }
+
+/**
+ * Creates a MPI barrier to wait for all processes.
+ */
+void wait_barrier()
+{
+    MPI_Barrier(MPI_COMM_WORLD);
+}

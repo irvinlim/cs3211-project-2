@@ -40,7 +40,8 @@ You can increase the verbosity of the output by passing the `LOG_LEVEL` environm
 * **2 - SUCCESS**: Also show success messages
 * **3 - NOTICE (Default)**: Also show notices
 * **4 - VERBOSE**: Show some verbose messages
-* **5 - DEBUG**: Maximum verbosity
+* **5 - MPI**: Show verbose messages as well as MPI traces between processes
+* **6 - DEBUG**: Maximum verbosity
 
 For example, to increase the verbosity to VERBOSE, you can do
 

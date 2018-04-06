@@ -11,6 +11,11 @@ Spec read_spec_file(char *specfile);
 void print_spec(Spec spec);
 
 /**
+ * Prints info about the canvas.
+ */
+void print_canvas_info(Spec spec);
+
+/**
  * Returns the length of the size of the pool.
  */
 int get_pool_length();

@@ -22,3 +22,8 @@ int get_process_id();
  * Returns 1 if the current process is master.
  */
 int is_master();
+
+/**
+ * Creates a MPI barrier to wait for all processes.
+ */
+void wait_barrier();

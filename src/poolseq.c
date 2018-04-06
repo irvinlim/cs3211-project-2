@@ -1,3 +1,12 @@
+/**
+ * poolseq.c
+ * 
+ * For the sequential version of the program, we will run the 
+ * entire procedure on a single process, although the number of
+ * cores (supplied by the -np flag) will be used to determine the
+ * number of regions that should be computed.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,10 +35,10 @@ void run_simulation(Spec spec, Particle *particles)
         long long start = wall_clock_time();
 
         // Compute the new velocity for this timestep.
-        update_velocity(particles, spec.TotalNumberOfParticles, spec.TimeStep);
+        update_velocity(spec, particles, spec.TotalNumberOfParticles, spec.TimeStep, -1, -1);
 
         // Update the position of all particles.
-        update_position(particles, spec.TotalNumberOfParticles, spec.TimeStep);
+        update_position(spec, particles, spec.TotalNumberOfParticles, spec.TimeStep, -1);
 
         // Get timing and log.
         long long end = wall_clock_time();
@@ -49,28 +58,26 @@ void run_simulation(Spec spec, Particle *particles)
     print_particles(spec.TotalNumberOfParticles, particles);
 }
 
-/**
- * For the sequential version of the program, we will run the 
- * entire procedure on a single process, although the number of
- * cores (supplied by the -np flag) will be used to determine the
- * number of regions that should be computed.
- */
 int main(int argc, char **argv)
 {
     multiproc_init(argc, argv);
     set_log_level_env();
 
+    // Parse arguments.
+    check_arguments(argc, argv, PROG);
+    char *specfile = argv[1];
+    char *outputfile = argv[2];
+
     // Only run on a single (master) process.
     if (is_master()) {
         LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), 1);
 
-        // Parse arguments.
-        check_arguments(argc, argv, PROG);
-        char *specfile = argv[1];
-        char *outputfile = argv[2];
-
         // Read the specification file into a struct.
         Spec spec = read_spec_file(specfile);
+
+        // Debug print all read-in values.
+        print_spec(spec);
+        print_canvas_info(spec);
 
         // Generate the particles.
         Particle *particles = generate_particles(spec);

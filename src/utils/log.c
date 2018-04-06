@@ -14,6 +14,7 @@ const char *log_level_labels[] = {
     "NOTICE: ",
     "",
     "",
+    "",
 };
 
 // Log level colors.
@@ -23,6 +24,7 @@ const char *log_level_colors[] = {
     "\033[0;32m",
     "\033[0;33m",
     "\033[0;34m",
+    "\033[0;35m",
     "\033[0;36m",
 };
 
