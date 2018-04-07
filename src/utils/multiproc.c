@@ -9,6 +9,7 @@
 #include "types.h"
 
 #define MASTER_ID 0
+#define PARTICLE_FIELD_COUNT 8
 
 /**
  * MPI rank number.
@@ -43,9 +44,10 @@ void multiproc_finalize()
  */
 void mpi_init_particle(MPI_Datatype *newtype)
 {
-    int blocklengths[7] = { 1, 1, 1, 1, 1, 1, 1 };
+    int blocklengths[PARTICLE_FIELD_COUNT] = { 1, 1, 1, 1, 1, 1, 1 };
 
-    MPI_Aint displacements[7] = {
+    MPI_Aint displacements[PARTICLE_FIELD_COUNT] = {
+        offsetof(Particle, id),
         offsetof(Particle, size),
         offsetof(Particle, mass),
         offsetof(Particle, radius),
@@ -55,7 +57,8 @@ void mpi_init_particle(MPI_Datatype *newtype)
         offsetof(Particle, vy),
     };
 
-    MPI_Datatype types[7] = {
+    MPI_Datatype types[PARTICLE_FIELD_COUNT] = {
+        MPI_INT,
         MPI_INT,
         MPI_LONG_DOUBLE,
         MPI_LONG_DOUBLE,
@@ -66,7 +69,7 @@ void mpi_init_particle(MPI_Datatype *newtype)
     };
 
     // Create the datatype.
-    int error = MPI_Type_create_struct(7, blocklengths, displacements, types, newtype);
+    int error = MPI_Type_create_struct(PARTICLE_FIELD_COUNT, blocklengths, displacements, types, newtype);
     if (error != MPI_SUCCESS) {
         LL_ERROR("Could not initialize Particle MPI datatype! Error code: %d", error);
         exit(EXIT_FAILURE);

@@ -13,6 +13,9 @@ typedef enum particle_size_t {
  * Data structure for a large particle.
  */
 typedef struct particle_t {
+    // ID for the particle (for easier reference).
+    int id;
+
     // Type of particle (large or small).
     ParticleSize size;
 
