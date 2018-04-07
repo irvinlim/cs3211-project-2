@@ -1,7 +1,14 @@
+#include <mpi.h>
+
 /**
  * Initializes MPI.
  */
 void multiproc_init(int argc, char **argv);
+
+/**
+ * Initializes and creates a datatype for the Particle struct.
+ */
+void mpi_init_particle(MPI_Datatype *newtype);
 
 /**
  * Finalizes MPI.

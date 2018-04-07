@@ -1,10 +1,12 @@
 #include <math.h>
 #include <mpi.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "log.h"
 #include "multiproc.h"
+#include "types.h"
 
 #define MASTER_ID 0
 
@@ -37,6 +39,43 @@ void multiproc_finalize()
 }
 
 /**
+ * Initializes and creates a datatype for the Particle struct.
+ */
+void mpi_init_particle(MPI_Datatype *newtype)
+{
+    int blocklengths[7] = { 1, 1, 1, 1, 1, 1, 1 };
+
+    MPI_Aint displacements[7] = {
+        offsetof(Particle, size),
+        offsetof(Particle, mass),
+        offsetof(Particle, radius),
+        offsetof(Particle, x),
+        offsetof(Particle, y),
+        offsetof(Particle, vx),
+        offsetof(Particle, vy),
+    };
+
+    MPI_Datatype types[7] = {
+        MPI_INT,
+        MPI_LONG_DOUBLE,
+        MPI_LONG_DOUBLE,
+        MPI_LONG_DOUBLE,
+        MPI_LONG_DOUBLE,
+        MPI_LONG_DOUBLE,
+        MPI_LONG_DOUBLE,
+    };
+
+    // Create the datatype.
+    int error = MPI_Type_create_struct(7, blocklengths, displacements, types, newtype);
+    if (error != MPI_SUCCESS) {
+        LL_ERROR("Could not initialize Particle MPI datatype! Error code: %d", error);
+        exit(EXIT_FAILURE);
+    }
+
+    MPI_Type_commit(newtype);
+}
+
+/**
  * Gets the number of cores.
  */
 int get_num_cores()
@@ -66,12 +105,4 @@ int get_process_id()
 int is_master()
 {
     return get_process_id() == MASTER_ID;
-}
-
-/**
- * Creates a MPI barrier to wait for all processes.
- */
-void wait_barrier()
-{
-    MPI_Barrier(MPI_COMM_WORLD);
 }
