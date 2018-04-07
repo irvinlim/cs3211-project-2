@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../utils/types.h"
 
 /**
  * Returns the region that a particle resides in.
+ * 
+ * TODO: Test if function is working.
  */
 int get_region(Particle p, Spec spec)
 {
-    int region_x = p.x / spec.GridSize;
-    int region_y = p.y / spec.GridSize;
+    long region_x = p.x / spec.GridSize;
+    long region_y = p.y / spec.GridSize;
 
     // Limit the region IDs to be bounded to the corner regions, just in case.
     // Particles should be wrapped around when they exceed the boundaries of the canvas.
@@ -22,6 +25,8 @@ int get_region(Particle p, Spec spec)
 /**
  * Returns the horizon distance between two region IDs, 
  * relative to the number of regions (provided by pool_length).
+ * 
+ * TODO: Test if function is working.
  */
 int get_horizon_dist(int pool_length, int r1, int r2)
 {
@@ -47,4 +52,29 @@ int get_horizon_dist(int pool_length, int r1, int r2)
     }
 
     return -1;
+}
+
+/**
+ * Filters an array of particles by region.
+ */
+Particle *filter_by_region(long long *n_filtered, Spec spec, int region_id, Particle *p, long long n)
+{
+    // Allocate space for all particles first.
+    Particle *filtered = malloc(n * sizeof(Particle));
+    long long count = 0;
+
+    // Filter only particles that belong to the region.
+    for (long long i = 0; i < n; i++) {
+        int region = get_region(p[i], spec);
+        if (region != region_id) continue;
+        filtered[count++] = p[i];
+    }
+
+    // Resize the array.
+    filtered = realloc(filtered, count * sizeof(Particle));
+
+    // Allocate to count pointer.
+    *n_filtered = count;
+
+    return filtered;
 }
