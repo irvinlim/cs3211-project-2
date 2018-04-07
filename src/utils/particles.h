@@ -19,3 +19,8 @@ void print_particle(Particle particle);
  * Debug prints all particles.
  */
 void print_particles(int n, Particle *particles);
+
+/**
+ * Prints a concatenated list of all particle IDs.
+ */
+void print_particle_ids(char *msg, int n, Particle *particles);

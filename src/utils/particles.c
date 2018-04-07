@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "log.h"
+#include "multiproc.h"
 #include "particles.h"
 
 #define BITMAP_MAX 255
@@ -167,7 +168,8 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 void print_particle(Particle particle)
 {
     LL_VERBOSE(
-        "- Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
+        "- ID: %d, Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
+        particle.id,
         particle.size,
         particle.mass,
         particle.radius,
@@ -176,17 +178,54 @@ void print_particle(Particle particle)
 }
 
 /**
+ * Prints a concatenated list of all particle IDs.
+ */
+void print_particle_ids(char *msg, int n, Particle *particles)
+{
+    char delimiter = ',';
+
+    // Get the maximum possible size of the string.
+    int maxdigits = ceil(log10(n));
+    int maxlen = maxdigits * n + n + 1;
+
+    // Allocate a buffer large enough to put our string.
+    char *buf = calloc(maxlen, sizeof(char));
+
+    // Concatenate all IDs into a string.
+    int currentlen = 0;
+    for (int i = 0; i < n; i++) {
+        int len = particles[i].id <= 1 ? 1 : ceil(log10(particles[i].id));
+
+        // Add the ID to the buffer.
+        sprintf(&buf[currentlen], "%d", particles[i].id);
+        currentlen += len;
+
+        // Add a delimiter.
+        if (i < n - 1) buf[currentlen++] = delimiter;
+    }
+
+    if (currentlen == 0) {
+        sprintf(buf, "None");
+        currentlen += 4;
+    }
+
+    // Add null-terminating character.
+    buf[currentlen++] = 0;
+
+    LL_MPI("Process %d: %s - %s", get_process_id(), msg, buf);
+}
+
+/**
  * Debug prints all particles.
  */
 void print_particles(int n, Particle *particles)
 {
-    if (log_level < LOG_LEVEL_DEBUG) return;
-
     LL_DEBUG("Dump of all %d particles: ", n);
 
     for (int i = 0; i < n; i++)
         LL_DEBUG(
-            "+ Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf); Velocity: (%Lf, %Lf)",
+            "+ ID: %d, Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf); Velocity: (%Lf, %Lf)",
+            particles[i].id,
             particles[i].size,
             particles[i].mass,
             particles[i].radius,
