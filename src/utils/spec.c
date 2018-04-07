@@ -66,6 +66,7 @@ Spec read_spec_file(char *specfile)
 
     // Fill missing values for large particles.
     for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
+        spec.LargeParticles[i].id = i;
         spec.LargeParticles[i].size = LARGE;
         spec.LargeParticles[i].vx = 0.0L;
         spec.LargeParticles[i].vy = 0.0L;

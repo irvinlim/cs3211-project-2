@@ -25,6 +25,7 @@ Particle *generate_small_particles(Spec spec, int n, long grid_size, long double
     // Generate small particles at random starting locations.
     for (int i = 0; i < n; i++) {
         particles[i] = (Particle){
+            .id = i + spec.NumberOfLargeParticles,
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,
