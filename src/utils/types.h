@@ -48,7 +48,7 @@ typedef struct spec_t {
     long GridSize;
 
     // Number of small (gas) particles.
-    long long NumberOfSmallParticles;
+    int NumberOfSmallParticles;
 
     // Mass of small (gas) particles.
     long double SmallParticleMass;
@@ -57,7 +57,7 @@ typedef struct spec_t {
     long double SmallParticleRadius;
 
     // Number of large (gas) particles.
-    long long NumberOfLargeParticles;
+    int NumberOfLargeParticles;
 
     // Array of large particle data, in the following format:
     // 0: Mass; 1: Radius; 2: x-coordinate; 3: y-coordinate
@@ -68,7 +68,7 @@ typedef struct spec_t {
     int PoolLength;
 
     // Total number of particles.
-    long long TotalNumberOfParticles;
+    int TotalNumberOfParticles;
 } Spec;
 
 #endif

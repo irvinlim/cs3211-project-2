@@ -18,4 +18,4 @@ void print_particle(Particle particle);
 /**
  * Debug prints all particles.
  */
-void print_particles(long long n, Particle *particles);
+void print_particles(int n, Particle *particles);

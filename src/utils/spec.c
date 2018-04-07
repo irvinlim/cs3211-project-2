@@ -32,10 +32,10 @@ Spec read_spec_file(char *specfile)
         "TimeStep: %Lf\n"
         "Horizon: %ld\n"
         "GridSize: %ld\n"
-        "NumberOfSmallParticles: %lld\n"
+        "NumberOfSmallParticles: %d\n"
         "SmallParticleMass: %Lf\n"
         "SmallParticleRadius: %Lf\n"
-        "NumberOfLargeParticles: %lld\n",
+        "NumberOfLargeParticles: %d\n",
         &spec.TimeSlots,
         &spec.TimeStep,
         &spec.Horizon,
@@ -55,7 +55,7 @@ Spec read_spec_file(char *specfile)
     }
 
     spec.LargeParticles = malloc(sizeof(Particle) * spec.NumberOfLargeParticles);
-    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
         fscanf(fp,
             "%Lf %Lf %Lf %Lf\n",
             &spec.LargeParticles[i].radius,
@@ -65,7 +65,7 @@ Spec read_spec_file(char *specfile)
     }
 
     // Fill missing values for large particles.
-    for (long long i = 0; i < spec.NumberOfLargeParticles; i++) {
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
         spec.LargeParticles[i].size = LARGE;
         spec.LargeParticles[i].vx = 0.0L;
         spec.LargeParticles[i].vy = 0.0L;
@@ -96,13 +96,13 @@ void print_spec(Spec spec)
     LL_VERBOSE("- TimeStep: %Lf", spec.TimeStep);
     LL_VERBOSE("- Horizon: %ld", spec.Horizon);
     LL_VERBOSE("- GridSize: %ld", spec.GridSize);
-    LL_VERBOSE("- NumberOfSmallParticles: %lld", spec.NumberOfSmallParticles);
+    LL_VERBOSE("- NumberOfSmallParticles: %d", spec.NumberOfSmallParticles);
     LL_VERBOSE("- SmallParticleMass: %Lf", spec.SmallParticleMass);
     LL_VERBOSE("- SmallParticleRadius: %Lf", spec.SmallParticleRadius);
-    LL_VERBOSE("- NumberOfLargeParticles: %lld", spec.NumberOfLargeParticles);
+    LL_VERBOSE("- NumberOfLargeParticles: %d", spec.NumberOfLargeParticles);
     LL_VERBOSE("%s: ", "Large particle data");
 
-    for (long long i = 0; i < spec.NumberOfLargeParticles; i++)
+    for (int i = 0; i < spec.NumberOfLargeParticles; i++)
         print_particle(spec.LargeParticles[i]);
 }
 
@@ -112,10 +112,10 @@ void print_spec(Spec spec)
 void print_canvas_info(Spec spec)
 {
     // Print info about canvas size.
-    long long total_particles = spec.TotalNumberOfParticles;
+    int total_particles = spec.TotalNumberOfParticles;
     int num_grids = spec.PoolLength * spec.PoolLength;
     long grid_size = spec.GridSize;
     long canvas_size = spec.GridSize * spec.PoolLength;
-    LL_NOTICE("Generated %lld particle(s) in %d region(s) of size %ldx%ld each; Total canvas size is %ldx%ld.",
+    LL_NOTICE("Generated %d particle(s) in %d region(s) of size %ldx%ld each; Total canvas size is %ldx%ld.",
         total_particles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
 }

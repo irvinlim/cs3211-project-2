@@ -13,7 +13,7 @@
  * Generates small particles in random starting locations,
  * within the specified boundaries.
  */
-Particle *generate_small_particles(Spec spec, long long n, long grid_size, long double start_x, long double start_y)
+Particle *generate_small_particles(Spec spec, int n, long grid_size, long double start_x, long double start_y)
 {
     // Initialize PRNG.
     time_t t;
@@ -23,7 +23,7 @@ Particle *generate_small_particles(Spec spec, long long n, long grid_size, long 
     Particle *particles = malloc(sizeof(Particle) * n);
 
     // Generate small particles at random starting locations.
-    for (long long i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         particles[i] = (Particle){
             .size = SMALL,
             .mass = spec.SmallParticleMass,
@@ -177,13 +177,13 @@ void print_particle(Particle particle)
 /**
  * Debug prints all particles.
  */
-void print_particles(long long n, Particle *particles)
+void print_particles(int n, Particle *particles)
 {
     if (log_level < LOG_LEVEL_DEBUG) return;
 
-    LL_DEBUG("Dump of all %lld particles: ", n);
+    LL_DEBUG("Dump of all %d particles: ", n);
 
-    for (long long i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
         LL_DEBUG(
             "+ Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf); Velocity: (%Lf, %Lf)",
             particles[i].size,

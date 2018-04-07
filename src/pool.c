@@ -32,7 +32,7 @@ Spec spec;
 void execute_time_step(Particle *p)
 {
     int region_id = get_process_id();
-    long long n = spec.TotalNumberOfParticles;
+    int n = spec.TotalNumberOfParticles;
     long double dt = spec.TimeStep;
     int horizon = spec.Horizon;
 

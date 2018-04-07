@@ -12,11 +12,11 @@
 /**
  * Updates the position of a particle for a given timestep.
  */
-void update_position(Spec spec, Particle *p, long long n, long double dt, int region_id)
+void update_position(Spec spec, Particle *p, int n, long double dt, int region_id)
 {
-    LL_DEBUG("Updating position of %lld particles:", n);
+    LL_DEBUG("Updating position of %d particles:", n);
 
-    for (long long i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         // Skip if the particle is not in the specified region.
         if (region_id >= 0 && get_region(p[i], spec) != region_id) continue;
 
@@ -24,7 +24,7 @@ void update_position(Spec spec, Particle *p, long long n, long double dt, int re
         p[i].x += dt * p[i].vx;
         p[i].y += dt * p[i].vy;
 
-        LL_DEBUG("+ Particle %6.0lld: Velocity is (%0.9Lf, %0.9Lf); Displacing by (%0.9Lf, %0.9Lf); New position: (%0.9Lf, %0.9Lf)",
+        LL_DEBUG("+ Particle %6.0d: Velocity is (%0.9Lf, %0.9Lf); Displacing by (%0.9Lf, %0.9Lf); New position: (%0.9Lf, %0.9Lf)",
             i + 1, p[i].vx, p[i].vy, dt * p[i].vx, dt * p[i].vy, p[i].x, p[i].y);
     }
 }
@@ -33,19 +33,19 @@ void update_position(Spec spec, Particle *p, long long n, long double dt, int re
  * Computes the new velocity for each particle for a given timestep.
  * Uses the gravitational force formula to compute the force, giving us the new velocity.
  */
-void update_velocity(Spec spec, Particle *p, long long n, long double dt, int region_id, int horizon)
+void update_velocity(Spec spec, Particle *p, int n, long double dt, int region_id, int horizon)
 {
-    for (long long i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         long double fx = 0.0, fy = 0.0;
         int pr = get_region(p[i], spec);
 
         // Skip if the particle is not in the specified region.
         if (region_id >= 0 && pr != region_id) continue;
 
-        LL_DEBUG("Computing force on particle %lld with dt = %0.6Lf:", i + 1, dt);
+        LL_DEBUG("Computing force on particle %d with dt = %0.6Lf:", i + 1, dt);
 
         // Compute the force of each particle on p0.
-        for (long long j = 0; j < n; j++) {
+        for (int j = 0; j < n; j++) {
             // Don't compute the force of a particle on itself.
             if (i == j) continue;
 
@@ -54,7 +54,7 @@ void update_velocity(Spec spec, Particle *p, long long n, long double dt, int re
             int pr2 = get_region(p[i], spec);
             if (horizon >= 0 && get_horizon_dist(spec.PoolLength, pr, pr2) > horizon) continue;
 
-            LL_DEBUG("+ Particle %lld: ", j + 1);
+            LL_DEBUG("+ Particle %d: ", j + 1);
 
             long double dx = p[j].x - p[i].x;
             long double dy = p[j].y - p[i].y;

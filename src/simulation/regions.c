@@ -57,14 +57,14 @@ int get_horizon_dist(int pool_length, int r1, int r2)
 /**
  * Filters an array of particles by region.
  */
-Particle *filter_by_region(long long *n_filtered, Spec spec, int region_id, Particle *p, long long n)
+Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *p, int n)
 {
     // Allocate space for all particles first.
     Particle *filtered = malloc(n * sizeof(Particle));
-    long long count = 0;
+    int count = 0;
 
     // Filter only particles that belong to the region.
-    for (long long i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         int region = get_region(p[i], spec);
         if (region != region_id) continue;
         filtered[count++] = p[i];

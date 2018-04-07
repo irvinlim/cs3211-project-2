@@ -14,4 +14,4 @@ int get_horizon_dist(int pool_length, int r1, int r2);
 /**
  * Filters an array of particles by region.
  */
-Particle *filter_by_region(long long *n_filtered, Spec spec, int region_id, Particle *p, long long n);
+Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *p, int n);
