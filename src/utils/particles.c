@@ -23,7 +23,7 @@ Particle *generate_small_particles(Spec spec, long long n, long grid_size, long 
     Particle *particles = malloc(sizeof(Particle) * n);
 
     // Generate small particles at random starting locations.
-    for (long long i = 0; i < 0; i++) {
+    for (long long i = 0; i < n; i++) {
         particles[i] = (Particle){
             .size = SMALL,
             .mass = spec.SmallParticleMass,
@@ -56,7 +56,7 @@ Particle *generate_particles(Spec spec)
     // Generate small particles and allocate to the buffer.
     Particle *small_particles = generate_small_particles(spec, spec.NumberOfSmallParticles, canvas_length, 0, 0);
     size_t small_particles_len = spec.NumberOfSmallParticles * sizeof(Particle);
-    memcpy(particles + large_particles_len, small_particles, small_particles_len);
+    memcpy(&particles[spec.NumberOfLargeParticles], small_particles, small_particles_len);
 
     // Debug print all particles.
     print_particles(spec.TotalNumberOfParticles, particles);
