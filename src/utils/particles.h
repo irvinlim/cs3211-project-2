@@ -1,7 +1,8 @@
 #include "types.h"
 
 /**
- * Generate all particles based on the provided specifications.
+ * Generate both small and large particles for a single region, according to the given spec.
+ * The positions of the small particles will be randomized anywhere within the region.
  */
 Particle *generate_particles(Spec spec);
 

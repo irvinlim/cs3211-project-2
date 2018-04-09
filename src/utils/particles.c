@@ -41,12 +41,13 @@ Particle *generate_small_particles(Spec spec, int n, long grid_size, long double
 }
 
 /**
- * Generate all particles for all regions, according to the given spec.
+ * Generate both small and large particles for a single region, according to the given spec.
+ * The positions of the small particles will be randomized anywhere within the region.
  */
 Particle *generate_particles(Spec spec)
 {
-    // Get canvas length.
-    long canvas_length = spec.GridSize * spec.PoolLength;
+    // The small particles should be generated for a single region, not all regions.
+    long grid_size = spec.GridSize;
 
     // Allocate space for all particles.
     Particle *particles = malloc(sizeof(Particle) * spec.TotalNumberOfParticles);
@@ -56,7 +57,7 @@ Particle *generate_particles(Spec spec)
     memcpy(particles, spec.LargeParticles, large_particles_len);
 
     // Generate small particles and allocate to the buffer.
-    Particle *small_particles = generate_small_particles(spec, spec.NumberOfSmallParticles, canvas_length, 0, 0);
+    Particle *small_particles = generate_small_particles(spec, spec.NumberOfSmallParticles, grid_size, 0, 0);
     size_t small_particles_len = spec.NumberOfSmallParticles * sizeof(Particle);
     memcpy(&particles[spec.NumberOfLargeParticles], small_particles, small_particles_len);
 
@@ -73,6 +74,8 @@ Particle *generate_particles(Spec spec)
  * the presence of the body of a small particle, while
  * any value greater than BITMAP_MAX represents the body
  * of a large particle.
+ * 
+ * TODO: Handle 2-D particles array.
  */
 int **generate_canvas(Spec spec, Particle *particles)
 {
@@ -119,6 +122,8 @@ int **generate_canvas(Spec spec, Particle *particles)
 
 /**
  * Generate a heatmap of particles and saves it to an image file.
+ * 
+ * TODO: Handle 2-D particles array.
  */
 void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 {

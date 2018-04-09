@@ -23,6 +23,38 @@ int get_region(Particle p, Spec spec)
 }
 
 /**
+ * Returns the x-coordinate of a region.
+ */
+int get_region_x(int region_id, Spec spec)
+{
+    return region_id / spec.PoolLength;
+}
+
+/**
+ * Returns the y-coordinate of a region.
+ */
+int get_region_y(int region_id, Spec spec)
+{
+    return region_id % spec.PoolLength;
+}
+
+/**
+ * Denormalizes an x-coordinate wrt region.
+ */
+int denorm_region_x(long double x, int region_id, Spec spec)
+{
+    return x + get_region_x(region_id, spec) * spec.GridSize;
+}
+
+/**
+ * Denormalizes an y-coordinate wrt region.
+ */
+int denorm_region_y(long double y, int region_id, Spec spec)
+{
+    return y + get_region_y(region_id, spec) * spec.GridSize;
+}
+
+/**
  * Returns the horizon distance between two region IDs, 
  * relative to the number of regions (provided by pool_length).
  * 
@@ -55,9 +87,21 @@ int get_horizon_dist(int pool_length, int r1, int r2)
 }
 
 /**
+ * Allocates space for a 2-D array of arrays of particles, indexed by region.
+ */
+Particle **allocate_particles(int *sizes, int n_regions)
+{
+    Particle **particles = (Particle **)malloc(n_regions * sizeof(Particle *));
+    for (int i = 0; i < n_regions; i++)
+        particles[i] = (Particle *)malloc(sizes[i] * sizeof(Particle *));
+
+    return particles;
+}
+
+/**
  * Filters an array of particles by region.
  */
-Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *p, int n)
+Particle *filter_by_regions(int *n_filtered, Spec spec, int *region_ids, int n_regions, Particle *p, int n)
 {
     // Allocate space for all particles first.
     Particle *filtered = malloc(n * sizeof(Particle));
@@ -66,8 +110,11 @@ Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *
     // Filter only particles that belong to the region.
     for (int i = 0; i < n; i++) {
         int region = get_region(p[i], spec);
-        if (region != region_id) continue;
-        filtered[count++] = p[i];
+        for (int r = 0; r < n_regions; r++) {
+            int region_id = region_ids[r];
+            if (region != region_id) continue;
+            filtered[count++] = p[i];
+        }
     }
 
     // Resize the array.
@@ -77,4 +124,15 @@ Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *
     *n_filtered = count;
 
     return filtered;
+}
+
+/**
+ * Filters an array of particles by region.
+ */
+Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *p, int n)
+{
+    int regions[1];
+    regions[0] = region_id;
+
+    return filter_by_regions(n_filtered, spec, regions, 1, p, n);
 }

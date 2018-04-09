@@ -109,3 +109,31 @@ int is_master()
 {
     return get_process_id() == MASTER_ID;
 }
+
+/**
+ * Very simple wrapper around MPI_Send, which adds debug messages.
+ */
+int mpi_send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
+{
+    int process_id = get_process_id();
+    LL_MPI("Process %d: Sending %d items to process %d...", process_id, count, dest);
+
+    int error = MPI_Send(buf, count, datatype, dest, tag, comm);
+    LL_MPI("Process %d: Sent %d items to process %d!", process_id, count, dest);
+
+    return error;
+}
+
+/**
+ * Very simple wrapper around MPI_Recv, which adds debug messages.
+ */
+int mpi_recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
+{
+    int process_id = get_process_id();
+    LL_MPI("Process %d: Receiving %d items from process %d...", process_id, count, source);
+
+    int error = MPI_Recv(buf, count, datatype, source, tag, comm, status);
+    LL_MPI("Process %d: Received %d items from process %d!", process_id, count, source);
+
+    return error;
+}

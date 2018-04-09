@@ -31,6 +31,11 @@ int get_process_id();
 int is_master();
 
 /**
- * Creates a MPI barrier to wait for all processes.
+ * Very simple wrapper around MPI_Send, which adds debug messages.
  */
-void wait_barrier();
+int mpi_send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm);
+
+/**
+ * Very simple wrapper around MPI_Recv, which adds debug messages.
+ */
+int mpi_recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status);
