@@ -22,9 +22,14 @@
 #define TIMEBUF_LENGTH 10
 
 /**
+ * Stores the specifications for the program.
+ */
+Spec spec;
+
+/**
  * Runs the simulation according to the provided specifications.
  */
-void run_simulation(Spec spec, Particle *particles)
+void run_simulation(Particle *particles)
 {
     char time_passed[TIMEBUF_LENGTH];
     long long total_time = 0;
@@ -73,7 +78,7 @@ int main(int argc, char **argv)
         LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), 1);
 
         // Read the specification file into a struct.
-        Spec spec = read_spec_file(specfile);
+        spec = read_spec_file(specfile);
 
         // Debug print all read-in values.
         print_spec(spec);
@@ -83,7 +88,7 @@ int main(int argc, char **argv)
         Particle *particles = generate_particles(spec);
 
         // Run the simulation.
-        run_simulation(spec, particles);
+        run_simulation(particles);
 
         // Generate the heatmap.
         generate_heatmap(spec, particles, outputfile);
