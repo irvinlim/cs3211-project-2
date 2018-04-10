@@ -6,6 +6,10 @@
 // Define the log level here.
 unsigned char log_level = LOG_LEVEL_NOTICE;
 
+// Define the log process here.
+// If it is a non-negative number, only that process will log to stderr.
+int log_process = -1;
+
 // Log level labels.
 const char *log_level_labels[] = {
     "",
@@ -35,9 +39,15 @@ const char color_end[] = "\033[0m";
 // The log level can be overwritten by the LOG_LEVEL environment variable.
 void set_log_level_env()
 {
-    char *env = getenv("LOG_LEVEL");
+    char *env;
 
-    // Only parse env var if it is a number.
+    // Parse LOG_LEVEL var.
+    env = getenv("LOG_LEVEL");
     if (env != NULL && env[0] >= '0' && env[0] <= '9')
         log_level = (char)atoi(env);
+
+    // Parse LOG_PROCESS var.
+    env = getenv("LOG_PROCESS");
+    if (env != NULL && env[0] >= '0' && env[0] <= '9')
+        log_process = (char)atoi(env);
 }

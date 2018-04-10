@@ -23,26 +23,27 @@ typedef enum log_level_t {
 #endif
 
 extern unsigned char log_level;
+extern int log_process;
 extern const char *log_level_labels[];
 extern const char *log_level_colors[];
 extern const char color_end[];
 
-#define LOG(level, fmt, arg...)                                             \
-    do {                                                                    \
-        if (level <= log_level) {                                           \
-            time_t timer;                                                   \
-            char time_str[26];                                              \
-            time(&timer);                                                   \
-            strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", localtime(&timer)); \
-            fprintf(stderr, "%s[%s] %d ~ %s" fmt "%s\n",                    \
-                log_level_colors[level],                                    \
-                time_str,                                                   \
-                get_process_id(),                                           \
-                log_level_labels[level],                                    \
-                arg,                                                        \
-                color_end);                                                 \
-            fflush(stderr);                                                 \
-        }                                                                   \
+#define LOG(level, fmt, arg...)                                                           \
+    do {                                                                                  \
+        if (level <= log_level && (log_process < 0 || log_process == get_process_id())) { \
+            time_t timer;                                                                 \
+            char time_str[26];                                                            \
+            time(&timer);                                                                 \
+            strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", localtime(&timer));               \
+            fprintf(stderr, "%s[%s] %02d ~  %s" fmt "%s\n",                               \
+                log_level_colors[level],                                                  \
+                time_str,                                                                 \
+                get_process_id(),                                                         \
+                log_level_labels[level],                                                  \
+                arg,                                                                      \
+                color_end);                                                               \
+            fflush(stderr);                                                               \
+        }                                                                                 \
     } while (0)
 
 #define LL(fmt, arg...) LOG(LOG_LEVEL_NONE, fmt, arg)
