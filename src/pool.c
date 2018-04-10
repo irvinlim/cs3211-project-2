@@ -43,7 +43,7 @@ Particle **init_particles(int **sizes)
 
     // Allocate space for particles and their array sizes.
     *sizes = (int *)calloc(num_cores, sizeof(int));
-    *sizes[region_id] = spec.TotalNumberOfParticles;
+    (*sizes)[region_id] = spec.TotalNumberOfParticles;
     Particle **particles = allocate_particles(*sizes, num_cores);
 
     // Generate particles for __this region only__.
@@ -264,11 +264,11 @@ void master(char *specfile, char *outputfile)
     print_spec(spec);
     print_canvas_info(spec);
 
-    // Wait until all processes have read the spec.
-    MPI_Barrier(MPI_COMM_WORLD);
-
     // Initialize arrays and generate particles.
     particles_by_region = init_particles(&sizes);
+
+    // Wait until all processes have generated particles.
+    MPI_Barrier(MPI_COMM_WORLD);
 
     LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
 
@@ -294,11 +294,11 @@ void slave(char *specfile)
     // Read the specification file into a struct (in parallel).
     spec = read_spec_file(specfile);
 
-    // Wait until all processes have read the spec.
-    MPI_Barrier(MPI_COMM_WORLD);
-
     // Initialize arrays and generate particles.
     particles_by_region = init_particles(&sizes);
+
+    // Wait until all processes have generated particles.
+    MPI_Barrier(MPI_COMM_WORLD);
 
     // Run the simulation only in the region assigned.
     run_simulation(sizes, particles_by_region);
