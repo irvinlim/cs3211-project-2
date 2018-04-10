@@ -16,6 +16,7 @@ typedef enum log_level_t {
     LOG_LEVEL_VERBOSE,
     LOG_LEVEL_MPI,
     LOG_LEVEL_DEBUG,
+    LOG_LEVEL_DEBUG2,
 } LogLevel;
 #endif
 
@@ -42,6 +43,7 @@ extern const char color_end[];
     } while (0)
 
 #define LL(fmt, arg...) LOG(LOG_LEVEL_NONE, fmt, arg)
+#define LL_DEBUG2(fmt, arg...) LOG(LOG_LEVEL_DEBUG2, fmt, arg)
 #define LL_DEBUG(fmt, arg...) LOG(LOG_LEVEL_DEBUG, fmt, arg)
 #define LL_MPI(fmt, arg...) LOG(LOG_LEVEL_MPI, fmt, arg)
 #define LL_VERBOSE(fmt, arg...) LOG(LOG_LEVEL_VERBOSE, fmt, arg)
