@@ -225,6 +225,8 @@ void print_particle_ids(char *msg, int n, Particle *particles)
  */
 void print_particles(int n, Particle *particles)
 {
+    if (n <= 0) return;
+
     LL_DEBUG("Dump of all %d particles: ", n);
 
     for (int i = 0; i < n; i++)
