@@ -34,6 +34,7 @@ extern const char color_end[];
                 log_level_labels[level],                                    \
                 arg,                                                        \
                 color_end);                                                 \
+            fflush(stderr);                                                 \
         }                                                                   \
     } while (0)
 
