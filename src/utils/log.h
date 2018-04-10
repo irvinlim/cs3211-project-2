@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "multiproc.h"
+
 #ifndef LOG_H
 #define LOG_H
 typedef enum log_level_t {
@@ -32,9 +34,10 @@ extern const char color_end[];
             char time_str[26];                                              \
             time(&timer);                                                   \
             strftime(time_str, 26, "%Y-%m-%d %H:%M:%S", localtime(&timer)); \
-            fprintf(stderr, "%s[%s] %s" fmt "%s\n",                         \
+            fprintf(stderr, "%s[%s] %d ~ %s" fmt "%s\n",                    \
                 log_level_colors[level],                                    \
                 time_str,                                                   \
+                get_process_id(),                                           \
                 log_level_labels[level],                                    \
                 arg,                                                        \
                 color_end);                                                 \
