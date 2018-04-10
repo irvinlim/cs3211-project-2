@@ -76,8 +76,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     int *counters = calloc(num_regions, sizeof(int));
 
     // Allocate the sizes for a new particles array according to the sizes computed.
-    // TEMP: Allocate max particles first because can't figure out why
-    Particle **new_particles = allocate_max_particles(spec.TotalNumberOfParticles, num_regions);
+    Particle **new_particles = allocate_particles(sizes, num_regions);
 
     // Copy the particles into the new array.
     LL_DEBUG2("%s", "Separating particles from original 2-D array into their own regions...");
