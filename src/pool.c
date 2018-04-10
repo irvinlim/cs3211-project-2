@@ -44,7 +44,8 @@ Particle **init_particles(int **sizes)
     // Allocate space for particles and their array sizes.
     *sizes = (int *)calloc(num_cores, sizeof(int));
     (*sizes)[region_id] = spec.TotalNumberOfParticles;
-    Particle **particles = allocate_particles(*sizes, num_cores);
+    // TEMP: Allocate max particles.
+    Particle **particles = allocate_max_particles(spec.TotalNumberOfParticles, num_cores);
 
     // Generate particles for __this region only__.
     particles[region_id] = generate_particles(spec);
@@ -86,7 +87,8 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     if (is_master()) LL_MPI("%s", "Make sure that all regions have the same final sizes.");
 
     // Allocate space in the final_particles array, based on the sizes we calculated earlier.
-    Particle **final_particles = allocate_particles(final_sizes, num_cores);
+    // TEMP: Allocate max particles.
+    Particle **final_particles = allocate_max_particles(spec.TotalNumberOfParticles, num_cores);
 
     /// Step 2: Send the particles that should belong to a particular region to that process.
 
@@ -198,6 +200,9 @@ void run_simulation(int *sizes, Particle **particles_by_region)
 
         // Execute time step.
         particles_by_region = execute_time_step(sizes, particles_by_region);
+
+        // Wait for all particles to complete computation.
+        MPI_Barrier(MPI_COMM_WORLD);
 
         // Get timing and log.
         long long end = wall_clock_time();

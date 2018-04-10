@@ -60,24 +60,25 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Allocate the sizes for a new particles array according to the sizes computed.
-    Particle **new_particles = allocate_particles(sizes, num_regions);
+    // TEMP: Allocate max particles first because can't figure out why
+    Particle **new_particles = allocate_max_particles(spec.TotalNumberOfParticles, num_regions);
 
     // Keep track of number of particles stored within each region.
     int *counters = calloc(num_regions, sizeof(int));
-    for (int i = 0; i < num_regions; i++) counters[i] = 0;
 
     // Copy the particles into the new array.
     for (int i = 0; i < n; i++) {
         int region = get_region(particles_by_region[region_id][i], spec);
 
         // Append the particle into the array.
-        memcpy(&new_particles[region][counters[region]], &particles_by_region[region_id][i], sizeof(Particle));
+        new_particles[region][counters[region]] = particles_by_region[region_id][i];
 
         // Increment the counter.
-        counters[region]++;
+        counters[region] += 1;
+        assert(counters[region] > 0 && counters[region] <= spec.TotalNumberOfParticles * num_regions);
     }
 
-    // Free the counters since we don't need it.
+    // Free the counters since we don't need it anymore.
     free(counters);
 
     return new_particles;
