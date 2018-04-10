@@ -27,6 +27,7 @@ Particle *generate_small_particles(Spec spec, int n, int grid_size, long double 
     for (int i = 0; i < n; i++) {
         particles[i] = (Particle){
             .id = i + spec.NumberOfLargeParticles,
+            .region = -1, // actual region is found in the 2-D array key, this is only used for storing state during computation
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,

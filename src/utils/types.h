@@ -16,6 +16,9 @@ typedef struct particle_t {
     // ID for the particle (for easier reference).
     int id;
 
+    // Region for the particle (used during calculations).
+    int region;
+
     // Type of particle (large or small).
     ParticleSize size;
 
