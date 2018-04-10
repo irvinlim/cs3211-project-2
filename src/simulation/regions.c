@@ -41,7 +41,7 @@ int get_region_y(int region_id, Spec spec)
 /**
  * Denormalizes an x-coordinate wrt region.
  */
-int denorm_region_x(long double x, int region_id, Spec spec)
+long double denorm_region_x(long double x, int region_id, Spec spec)
 {
     return x + get_region_x(region_id, spec) * spec.GridSize;
 }
@@ -49,7 +49,7 @@ int denorm_region_x(long double x, int region_id, Spec spec)
 /**
  * Denormalizes an y-coordinate wrt region.
  */
-int denorm_region_y(long double y, int region_id, Spec spec)
+long double denorm_region_y(long double y, int region_id, Spec spec)
 {
     return y + get_region_y(region_id, spec) * spec.GridSize;
 }
