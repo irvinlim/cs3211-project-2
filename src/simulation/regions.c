@@ -27,7 +27,7 @@ int get_region(Particle p, Spec spec)
  */
 int get_region_x(int region_id, Spec spec)
 {
-    return region_id / spec.PoolLength;
+    return region_id % spec.PoolLength;
 }
 
 /**
@@ -35,7 +35,7 @@ int get_region_x(int region_id, Spec spec)
  */
 int get_region_y(int region_id, Spec spec)
 {
-    return region_id % spec.PoolLength;
+    return region_id / spec.PoolLength;
 }
 
 /**
