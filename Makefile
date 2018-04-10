@@ -3,7 +3,7 @@ LDIR=$(IDIR)/utils
 SDIR=$(IDIR)/simulation
 
 CC=mpicc
-CFLAGS=-Wall
+CFLAGS=-Wall -Wextra -std=gnu99
 
 DEPS=$(LDIR)/common.h $(LDIR)/multiproc.h $(LDIR)/spec.h $(LDIR)/particles.h $(LDIR)/log.h $(LDIR)/timer.h $(SDIR)/nbody.h $(SDIR)/regions.h
 LIBS=$(LDIR)/common.o $(LDIR)/multiproc.o $(LDIR)/spec.o $(LDIR)/particles.o $(LDIR)/log.o $(LDIR)/timer.o $(SDIR)/nbody.o $(SDIR)/regions.o
