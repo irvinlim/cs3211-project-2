@@ -25,8 +25,8 @@
  */
 Particle **update_position_and_region(long double dt, Spec spec, int num_regions, Particle **particles_by_region, int *sizes, int region_id)
 {
+    // First we store the number of particles that we had computed (and wish to update positions for).
     int n = sizes[region_id];
-
     LL_DEBUG("Updating positions and regions of %d particles in region %d:", n, region_id);
 
     // Truncate the sizes of all regions first.
@@ -60,21 +60,25 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Allocate the sizes for a new particles array according to the sizes computed.
-    Particle **new_particles = (Particle **)malloc(num_regions * sizeof(Particle *));
-    for (int region = 0; region < num_regions; region++)
-        new_particles[region] = malloc(sizes[region] * sizeof(Particle));
+    Particle **new_particles = allocate_particles(sizes, num_regions);
+
+    // Keep track of number of particles stored within each region.
+    int *counters = calloc(num_regions, sizeof(int));
+    for (int i = 0; i < num_regions; i++) counters[i] = 0;
 
     // Copy the particles into the new array.
-    int *counters = calloc(num_regions, sizeof(int));
     for (int i = 0; i < n; i++) {
         int region = get_region(particles_by_region[region_id][i], spec);
 
         // Append the particle into the array.
-        memcpy(new_particles[region] + counters[region], &particles_by_region[region_id][i], sizeof(Particle));
+        memcpy(&new_particles[region][counters[region]], &particles_by_region[region_id][i], sizeof(Particle));
 
         // Increment the counter.
         counters[region]++;
     }
+
+    // Free the counters since we don't need it.
+    free(counters);
 
     return new_particles;
 }

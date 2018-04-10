@@ -123,11 +123,8 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
             mpi_recv(&subarray_recv_size, 1, MPI_INT, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             LL_MPI("Process %d: About to receive %d particles from process %d.", my_region, subarray_recv_size, region);
 
-            // Calculate the offset based on the received number of particles so far.
-            int offset = total_received_size * sizeof(Particle);
-
             // Receive the particles from the other process that __belongs to my process' region__.
-            mpi_recv(final_particles[my_region] + offset, subarray_recv_size, mpi_particle_type, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            mpi_recv(&final_particles[my_region][total_received_size], subarray_recv_size, mpi_particle_type, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             // Increment the size received so far.
             total_received_size += subarray_recv_size;
