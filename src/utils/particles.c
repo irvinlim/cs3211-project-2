@@ -14,7 +14,7 @@
  * Generates small particles in random starting locations,
  * within the specified boundaries.
  */
-Particle *generate_small_particles(Spec spec, int n, long grid_size, long double start_x, long double start_y)
+Particle *generate_small_particles(Spec spec, int n, int grid_size, long double start_x, long double start_y)
 {
     // Initialize PRNG.
     time_t t;
@@ -47,7 +47,7 @@ Particle *generate_small_particles(Spec spec, int n, long grid_size, long double
 Particle *generate_particles(Spec spec)
 {
     // The small particles should be generated for a single region, not all regions.
-    long grid_size = spec.GridSize;
+    int grid_size = spec.GridSize;
 
     // Allocate space for all particles.
     Particle *particles = malloc(sizeof(Particle) * spec.TotalNumberOfParticles);
@@ -80,28 +80,28 @@ Particle *generate_particles(Spec spec)
 int **generate_canvas(Spec spec, Particle *particles)
 {
     // Get canvas length.
-    long canvas_length = spec.GridSize * spec.PoolLength;
+    int canvas_length = spec.GridSize * spec.PoolLength;
 
     // Allocate enough memory for a 2-D canvas.
     int **canvas = (int **)malloc(canvas_length * sizeof(int *));
-    for (long i = 0; i < canvas_length; i++)
+    for (int i = 0; i < canvas_length; i++)
         canvas[i] = (int *)calloc(canvas_length, sizeof(int));
 
     // Iterate through all particles.
-    for (long i = 0; i < spec.TotalNumberOfParticles; i++) {
+    for (int i = 0; i < spec.TotalNumberOfParticles; i++) {
         Particle p = particles[i];
 
         // Round up the coordinates of the particle's radius to find bounding box.
-        long r = ceil(p.radius);
+        int r = ceil(p.radius);
 
         // Iterate through all pixels occupied by the particle using simple
         // radius checking in the bounding box.
-        for (long j = -r; j <= r; j++) {
-            for (long k = -r; k <= r; k++) {
+        for (int j = -r; j <= r; j++) {
+            for (int k = -r; k <= r; k++) {
                 if (j * j + k * k < p.radius * p.radius) {
                     // Get the coordinates relative to the origin.
-                    long x = p.x + k;
-                    long y = p.y + j;
+                    int x = p.x + k;
+                    int y = p.y + j;
 
                     // Prevent drawing outside of the bounds of the array.
                     if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length) continue;
@@ -128,7 +128,7 @@ int **generate_canvas(Spec spec, Particle *particles)
 void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 {
     // Get canvas length.
-    long canvas_length = spec.GridSize * spec.PoolLength;
+    int canvas_length = spec.GridSize * spec.PoolLength;
 
     // Open file for writing.
     FILE *fp = fopen(outputfile, "w");
@@ -138,7 +138,7 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     }
 
     // Print PPM header.
-    fprintf(fp, "P3\n%ld %ld\n%d\n", canvas_length, canvas_length, BITMAP_MAX);
+    fprintf(fp, "P3\n%d %d\n%d\n", canvas_length, canvas_length, BITMAP_MAX);
 
     // Generate canvas from the list of particles.
     int **canvas = generate_canvas(spec, particles);

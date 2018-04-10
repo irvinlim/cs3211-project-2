@@ -30,8 +30,8 @@ Spec read_spec_file(char *specfile)
     fscanf(fp,
         "TimeSlots: %ld\n"
         "TimeStep: %Lf\n"
-        "Horizon: %ld\n"
-        "GridSize: %ld\n"
+        "Horizon: %d\n"
+        "GridSize: %d\n"
         "NumberOfSmallParticles: %d\n"
         "SmallParticleMass: %Lf\n"
         "SmallParticleRadius: %Lf\n"
@@ -95,8 +95,8 @@ void print_spec(Spec spec)
     LL_VERBOSE("%s: ", "Loaded specification");
     LL_VERBOSE("- TimeSlots: %ld", spec.TimeSlots);
     LL_VERBOSE("- TimeStep: %Lf", spec.TimeStep);
-    LL_VERBOSE("- Horizon: %ld", spec.Horizon);
-    LL_VERBOSE("- GridSize: %ld", spec.GridSize);
+    LL_VERBOSE("- Horizon: %d", spec.Horizon);
+    LL_VERBOSE("- GridSize: %d", spec.GridSize);
     LL_VERBOSE("- NumberOfSmallParticles: %d", spec.NumberOfSmallParticles);
     LL_VERBOSE("- SmallParticleMass: %Lf", spec.SmallParticleMass);
     LL_VERBOSE("- SmallParticleRadius: %Lf", spec.SmallParticleRadius);
@@ -115,8 +115,8 @@ void print_canvas_info(Spec spec)
     // Print info about canvas size.
     int total_particles = spec.TotalNumberOfParticles;
     int num_grids = spec.PoolLength * spec.PoolLength;
-    long grid_size = spec.GridSize;
-    long canvas_size = spec.GridSize * spec.PoolLength;
-    LL_NOTICE("Generated %d particle(s) in %d region(s) of size %ldx%ld each; Total canvas size is %ldx%ld.",
+    int grid_size = spec.GridSize;
+    int canvas_size = spec.GridSize * spec.PoolLength;
+    LL_NOTICE("Generated %d particle(s) in %d region(s) of size %dx%d each; Total canvas size is %dx%d.",
         total_particles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
 }

@@ -45,10 +45,10 @@ typedef struct spec_t {
     long double TimeStep;
 
     // Max distance of adjacent regions to factor in.
-    long Horizon;
+    int Horizon;
 
     // Length of the 2-D grid for each region.
-    long GridSize;
+    int GridSize;
 
     // Number of small (gas) particles.
     int NumberOfSmallParticles;

@@ -11,8 +11,8 @@
  */
 int get_region(Particle p, Spec spec)
 {
-    long region_x = p.x / spec.GridSize;
-    long region_y = p.y / spec.GridSize;
+    int region_x = p.x / spec.GridSize;
+    int region_y = p.y / spec.GridSize;
 
     // Limit the region IDs to be bounded to the corner regions, just in case.
     // Particles should be wrapped around when they exceed the boundaries of the canvas.
