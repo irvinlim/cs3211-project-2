@@ -93,7 +93,7 @@ Particle **allocate_particles(int *sizes, int n_regions)
 {
     Particle **particles = (Particle **)malloc(n_regions * sizeof(Particle *));
     for (int i = 0; i < n_regions; i++)
-        particles[i] = (Particle *)malloc(sizes[i] * sizeof(Particle *));
+        particles[i] = (Particle *)malloc(sizes[i] * sizeof(Particle));
 
     return particles;
 }
