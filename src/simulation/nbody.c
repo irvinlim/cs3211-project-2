@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../utils/common.h"
 #include "../utils/log.h"
+#include "../utils/particles.h"
 #include "../utils/types.h"
 #include "regions.h"
 
@@ -32,8 +34,9 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     // Truncate the sizes of all regions first.
     for (int i = 0; i < num_regions; i++) sizes[i] = 0;
 
-    // Update the positions of particles in the specified region.
+    // Update the positions of particles in the specified region and tabulate the size.
     for (int i = 0; i < n; i++) {
+        LL_DEBUG("+ Particle %6.0d: ", i + 1);
         // Denormalize the position wrt region first.
         particles_by_region[region_id][i].x = denorm_region_x(particles_by_region[region_id][i].x, region_id, spec);
         particles_by_region[region_id][i].y = denorm_region_y(particles_by_region[region_id][i].y, region_id, spec);
@@ -48,34 +51,61 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
 
         // Calculate the region of the new position.
         int region = get_region(particles_by_region[region_id][i], spec);
+        LL_DEBUG("  Region = %d", region);
         sizes[region]++;
+
+        // Update the region field here, so that we can sort it later.
+        particles_by_region[region_id][i].region = region;
 
         // Re-normalize the position wrt region.
         particles_by_region[region_id][i].x = fmodl(particles_by_region[region_id][i].x, spec.GridSize);
         particles_by_region[region_id][i].y = fmodl(particles_by_region[region_id][i].y, spec.GridSize);
 
-        LL_DEBUG("+ Particle %6.0d: Velocity is (%0.9Lf, %0.9Lf); Displacing by (%0.9Lf, %0.9Lf); New position: (%0.9Lf, %0.9Lf)",
-            i + 1, particles_by_region[region_id][i].vx, particles_by_region[region_id][i].vy, dt * particles_by_region[region_id][i].vx,
-            dt * particles_by_region[region_id][i].vy, particles_by_region[region_id][i].x, particles_by_region[region_id][i].y);
+        Particle p = particles_by_region[region_id][i];
+        LL_DEBUG2("  Velocity   = (%0.9Lf, %0.9Lf), Displacement = (%0.9Lf, %0.9Lf)", p.vx, p.vy, dt * p.vx, dt * p.vy);
+        LL_DEBUG("  New (x, y) = (%0.9Lf, %0.9Lf)", p.x, p.y);
+        assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
     }
+
+    // Debug print the final sizes.
+    char *buf = malloc(num_regions * 12);
+    join_ints(buf, ',', num_regions, sizes);
+    LL_DEBUG2("Resultant sizes: %s", buf);
+
+    // Keep track of number of particles stored within each region.
+    int *counters = calloc(num_regions, sizeof(int));
 
     // Allocate the sizes for a new particles array according to the sizes computed.
     // TEMP: Allocate max particles first because can't figure out why
     Particle **new_particles = allocate_max_particles(spec.TotalNumberOfParticles, num_regions);
 
-    // Keep track of number of particles stored within each region.
-    int *counters = calloc(num_regions, sizeof(int));
-
     // Copy the particles into the new array.
+    LL_DEBUG2("%s", "Separating particles from original 2-D array into their own regions...");
     for (int i = 0; i < n; i++) {
-        int region = get_region(particles_by_region[region_id][i], spec);
+        // Extract region from region field that we populated earlier.
+        int region = particles_by_region[region_id][i].region;
 
         // Append the particle into the array.
-        new_particles[region][counters[region]] = particles_by_region[region_id][i];
+        LL_DEBUG2("+ i = %d, region = %d, counters[region] = %d", i, region, counters[region]);
+        memcpy(&new_particles[region][counters[region]], &particles_by_region[region_id][i], sizeof(Particle));
 
         // Increment the counter.
         counters[region] += 1;
         assert(counters[region] > 0 && counters[region] <= spec.TotalNumberOfParticles * num_regions);
+    }
+
+    // Debug print the final sizes.
+    char *buf2 = malloc(num_regions * 12);
+    join_ints(buf2, ',', num_regions, counters);
+    LL_DEBUG2("Resultant counters: %s", buf2);
+
+    // Ensure that the sizes for counters and tabulated sizes are equal.
+    for (int i = 0; i < num_regions; i++) assert(counters[i] == sizes[i]);
+
+    // Debug particles that were copied into the new array.
+    for (int i = 0; i < num_regions; i++) {
+        LL_DEBUG2("Displaying %d particles in region %d:", sizes[i], i);
+        print_particles(LOG_LEVEL_DEBUG2, sizes[i], new_particles[i]);
     }
 
     // Free the counters since we don't need it anymore.
@@ -108,6 +138,8 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
 
         Particle p0 = particles_by_region[region_id][i];
         LL_DEBUG("Computing force on particle %d with dt = %0.6Lf:", i + 1, dt);
+        LL_DEBUG("+ p0(x, y)        = (%0.9Lf, %0.9Lf)", p0.x, p0.y);
+        LL_DEBUG("  denorm_p0(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p0.x, region_id, spec), denorm_region_y(p0.y, region_id, spec));
 
         // Compute the force of each particle in all regions on p0.
         for (int region = 0; region < num_regions; region++) {
@@ -116,7 +148,9 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
                 if (region == region_id && i == j) continue;
 
                 Particle p1 = particles_by_region[region][j];
-                LL_DEBUG("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("    p1(x, y)        = (%0.9Lf, %0.9Lf)", p1.x, p1.y);
+                LL_DEBUG2("    denorm_p1(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p1.x, region, spec), denorm_region_y(p1.y, region, spec));
 
                 long double dx = denorm_region_x(p1.x, region, spec) - denorm_region_x(p0.x, region_id, spec);
                 long double dy = denorm_region_y(p1.y, region, spec) - denorm_region_y(p0.y, region_id, spec);
@@ -124,22 +158,22 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
                 long double dist = sqrtl(dist2);
                 long double f = (p1.mass * p0.mass) / dist2;
 
-                LL_DEBUG("  dx = %0.9Lf, dy = %0.9Lf, dist = %0.9Lf, dist2 = %0.9Lf, f = %0.9Lf", dx, dy, dist, dist2, f);
+                LL_DEBUG2("    dx = %0.9Lf, dy = %0.9Lf, dist = %0.9Lf, dist2 = %0.9Lf, f = %0.9Lf", dx, dy, dist, dist2, f);
                 assert(dist2 != 0.0f);
 
                 fx += f * dx / dist;
                 fy += f * dy / dist;
 
-                LL_DEBUG("  fx += %0.9Lf = %0.9Lf, fy += %0.9Lf = %0.9Lf", f * dx / dist, fx, f * dy / dist, fy);
+                LL_DEBUG2("    fx += %0.9Lf = %0.9Lf, fy += %0.9Lf = %0.9Lf", f * dx / dist, fx, f * dy / dist, fy);
                 assert(!isnan(fx) && !isnan(fy) && isfinite(fx) && isfinite(fy));
             }
         }
 
-        LL_DEBUG("+ Total force: %0.9Lf %0.9Lf", fx, fy);
+        LL_DEBUG2("  Total force: %0.9Lf %0.9Lf", fx, fy);
 
         // Update the velocity.
-        LL_DEBUG("+ Old velocity: vx = %0.9Lf, vy = %0.9Lf", p0.vx, p0.vy);
-        LL_DEBUG("  New velocity: vx += %0.9Lf = %0.9Lf, vy += %0.9Lf = %0.9Lf", dt * fx, p0.vx + dt * fx, dt * fy, p0.vy + dt * fy);
+        LL_DEBUG2("  Old (vx, vy)    = (%0.9Lf, %0.9Lf)", p0.vx, p0.vy);
+        LL_DEBUG("  New (vx, vy)    = (%0.9Lf, %0.9Lf)", p0.vx + dt * fx, p0.vy + dt * fy);
         particles_by_region[region_id][i].vx += dt * fx;
         particles_by_region[region_id][i].vy += dt * fy;
 
