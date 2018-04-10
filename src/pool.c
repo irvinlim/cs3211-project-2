@@ -110,6 +110,8 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
                 // First send the size of the subarray we are going to send.
                 mpi_send(&send_sizes[dest], 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
 
+                LL_MPI("Process %d: About to send %d particles to process %d.", my_region, send_sizes[dest], dest);
+
                 // Now we can send the array of particles that __belongs to the process' region__.
                 mpi_send(send_particles_by_region[dest], send_sizes[dest], mpi_particle_type, dest, 0, MPI_COMM_WORLD);
             }
@@ -156,38 +158,9 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     /// Complete!
 
     if (is_master()) LL_VERBOSE("Particle synchronization is complete between %d processes.", num_cores);
-    print_particles(send_sizes[my_region], final_particles[my_region]);
+    print_particles(LOG_LEVEL_MPI, send_sizes[my_region], final_particles[my_region]);
 
     return final_particles;
-
-    ////////////
-
-    // Particle *synced = malloc(spec.TotalNumberOfParticles * sizeof(Particle));
-
-    // // We want to make sure that all regions have completed computation before synchronisation.
-    // MPI_Barrier(MPI_COMM_WORLD);
-
-    // // Filter the array of structs to be sent.
-    // // int sendcount;
-    // // Particle *filtered = filter_by_region(&sendcount, spec, region_id, particles, spec.TotalNumberOfParticles);
-    // // LL_MPI("Process %d: Sending %d particles...", region_id, sendcount);
-    // // print_particle_ids("Sending IDs", sendcount, filtered);
-    // // print_particles(sendcount, filtered);
-
-    // // Send to all neighbours within the horizon distance.
-    // for (int i = 0; i < num_cores; i++) {
-    //     if (i == region_id || get_horizon_dist(pool_length, i, region_id) > horizon) continue;
-    //     MPI_Send(filtered, sendcount, mpi_particle_type, i, NULL, MPI_COMM_WORLD);
-    // }
-
-    // // We want to make sure all particles are received before proceeding with simulation.
-    // MPI_Barrier(MPI_COMM_WORLD);
-
-    // if (is_master()) LL_VERBOSE("Particle synchronization is complete between %d processes.", num_cores);
-
-    // print_particle_ids("Synced IDs", spec.TotalNumberOfParticles, synced);
-
-    // return synced;
 }
 
 /**

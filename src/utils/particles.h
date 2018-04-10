@@ -1,3 +1,4 @@
+#include "log.h"
 #include "types.h"
 
 /**
@@ -14,14 +15,14 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile);
 /**
  * Debug prints details about a particle.
  */
-void print_particle(Particle particle);
+void print_particle(LogLevel level, Particle particle);
 
 /**
  * Debug prints all particles.
  */
-void print_particles(int n, Particle *particles);
+void print_particles(LogLevel level, int n, Particle *particles);
 
 /**
  * Prints a concatenated list of all particle IDs.
  */
-void print_particle_ids(char *msg, int n, Particle *particles);
+void print_particle_ids(LogLevel level, char *msg, int n, Particle *particles);

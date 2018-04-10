@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <time.h>
 
-enum {
+#ifndef LOG_H
+#define LOG_H
+typedef enum log_level_t {
     LOG_LEVEL_NONE,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_SUCCESS,
@@ -14,7 +16,8 @@ enum {
     LOG_LEVEL_VERBOSE,
     LOG_LEVEL_MPI,
     LOG_LEVEL_DEBUG,
-};
+} LogLevel;
+#endif
 
 extern unsigned char log_level;
 extern const char *log_level_labels[];

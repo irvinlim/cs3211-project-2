@@ -62,7 +62,7 @@ Particle *generate_particles(Spec spec)
     memcpy(&particles[spec.NumberOfLargeParticles], small_particles, small_particles_len);
 
     // Debug print all particles.
-    print_particles(spec.TotalNumberOfParticles, particles);
+    print_particles(LOG_LEVEL_DEBUG, spec.TotalNumberOfParticles, particles);
 
     return particles;
 }
@@ -170,9 +170,9 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 /**
  * Debug prints details about a particle.
  */
-void print_particle(Particle particle)
+void print_particle(LogLevel level, Particle particle)
 {
-    LL_VERBOSE(
+    LOG(level,
         "- ID: %d, Size: %d; Mass: %0.2Lf; Radius: %0.2Lf; Position: (%0.2Lf, %0.2Lf)",
         particle.id,
         particle.size,
@@ -185,7 +185,7 @@ void print_particle(Particle particle)
 /**
  * Prints a concatenated list of all particle IDs.
  */
-void print_particle_ids(char *msg, int n, Particle *particles)
+void print_particle_ids(LogLevel level, char *msg, int n, Particle *particles)
 {
     char delimiter = ',';
 
@@ -217,20 +217,21 @@ void print_particle_ids(char *msg, int n, Particle *particles)
     // Add null-terminating character.
     buf[currentlen++] = 0;
 
-    LL_MPI("Process %d: %s - %s", get_process_id(), msg, buf);
+    LOG(level, "Process %d: %s - %s", get_process_id(), msg, buf);
 }
 
 /**
  * Debug prints all particles.
  */
-void print_particles(int n, Particle *particles)
+void print_particles(LogLevel level, int n, Particle *particles)
 {
     if (n <= 0) return;
 
-    LL_DEBUG("Dump of all %d particles: ", n);
+    int region_id = get_process_id();
+    LOG(level, "Process %d: Dump of all %d particles: ", region_id, n);
 
     for (int i = 0; i < n; i++)
-        LL_DEBUG(
+        LOG(level,
             "+ ID: %d, Size: %d; Mass: %Lf; Radius: %Lf; Position: (%Lf, %Lf); Velocity: (%Lf, %Lf)",
             particles[i].id,
             particles[i].size,

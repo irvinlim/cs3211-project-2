@@ -104,7 +104,7 @@ void print_spec(Spec spec)
     LL_VERBOSE("%s: ", "Large particle data");
 
     for (int i = 0; i < spec.NumberOfLargeParticles; i++)
-        print_particle(spec.LargeParticles[i]);
+        print_particle(LOG_LEVEL_DEBUG, spec.LargeParticles[i]);
 }
 
 /**
