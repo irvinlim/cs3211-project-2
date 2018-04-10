@@ -99,6 +99,18 @@ Particle **allocate_particles(int *sizes, int n_regions)
 }
 
 /**
+ * Allocates space for as many particles as there are for each region.
+ */
+Particle **allocate_max_particles(int max_size, int n_regions)
+{
+    Particle **particles = (Particle **)malloc(n_regions * sizeof(Particle *));
+    for (int i = 0; i < n_regions; i++)
+        particles[i] = (Particle *)malloc(max_size * sizeof(Particle));
+
+    return particles;
+}
+
+/**
  * Filters an array of particles by region.
  */
 Particle *filter_by_regions(int *n_filtered, Spec spec, int *region_ids, int n_regions, Particle *p, int n)
