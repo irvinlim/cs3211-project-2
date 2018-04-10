@@ -91,7 +91,7 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     /// Step 2: Send the particles that should belong to a particular region to that process.
 
     // Whatever this processor computed for its own region, we can keep.
-    memcpy(final_particles[my_region], send_particles_by_region[my_region], final_sizes[my_region]);
+    memcpy(final_particles[my_region], send_particles_by_region[my_region], final_sizes[my_region] * sizeof(Particle));
 
     // Each process can receive particles (for the same region) from __any__ process.
     // This is because a process can compute a particle that ends up in a different process.
