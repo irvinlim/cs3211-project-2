@@ -28,7 +28,7 @@ void join_ints(char *buf, char delimiter, int n, int *ints)
     int currentlen = 0;
 
     for (int i = 0; i < n; i++) {
-        int len = ints[i] <= 1 ? 1 : ceil(log10(ints[i]));
+        int len = ints[i] <= 0 ? ceil(log10(abs(ints[i]) + 1)) + 1 : ceil(log10(ints[i] + 1));
 
         // Add the ID to the buffer.
         sprintf(&buf[currentlen], "%d", ints[i]);
