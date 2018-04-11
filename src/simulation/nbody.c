@@ -27,6 +27,9 @@
  */
 Particle **update_position_and_region(long double dt, Spec spec, int num_regions, Particle **particles_by_region, int *sizes, int region_id)
 {
+    char *logbuf = malloc(num_regions * 12);
+    assert(logbuf != NULL);
+
     // First we store the number of particles that we had computed (and wish to update positions for).
     int n = sizes[region_id];
     LL_DEBUG("Updating positions and regions of %d particles in region %d:", n, region_id);
@@ -68,15 +71,16 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Debug print the final sizes.
-    char *buf = malloc(num_regions * 12);
-    join_ints(buf, ',', num_regions, sizes);
-    LL_DEBUG2("Resultant sizes: %s", buf);
+    join_ints(logbuf, ',', num_regions, sizes);
+    LL_DEBUG2("Resultant sizes: %s", logbuf);
 
     // Keep track of number of particles stored within each region.
     int *counters = calloc(num_regions, sizeof(int));
+    assert(counters != NULL);
 
     // Allocate the sizes for a new particles array according to the sizes computed.
     Particle **new_particles = allocate_particles(sizes, num_regions);
+    assert(new_particles != NULL);
 
     // Copy the particles into the new array.
     LL_DEBUG2("%s", "Separating particles from original 2-D array into their own regions...");
@@ -94,9 +98,8 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Debug print the final sizes.
-    char *buf2 = malloc(num_regions * 12);
-    join_ints(buf2, ',', num_regions, counters);
-    LL_DEBUG2("Resultant counters: %s", buf2);
+    join_ints(logbuf, ',', num_regions, counters);
+    LL_DEBUG2("Resultant counters: %s", logbuf);
 
     // Ensure that the sizes for counters and tabulated sizes are equal.
     for (int i = 0; i < num_regions; i++) assert(counters[i] == sizes[i]);
@@ -107,8 +110,9 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         print_particles(LOG_LEVEL_DEBUG2, sizes[i], new_particles[i]);
     }
 
-    // Free the counters since we don't need it anymore.
+    // Free buffers.
     free(counters);
+    free(logbuf);
 
     return new_particles;
 }
