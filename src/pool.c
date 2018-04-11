@@ -16,6 +16,7 @@
 
 #include "simulation/nbody.h"
 #include "utils/common.h"
+#include "utils/heatmap.h"
 #include "utils/log.h"
 #include "utils/multiproc.h"
 #include "utils/particles.h"
@@ -25,6 +26,7 @@
 
 #define PROG "pool"
 #define TIMEBUF_LENGTH 10
+#define MASTER_ID 0
 
 // Stores the specifications for the program.
 Spec spec;
@@ -153,7 +155,6 @@ Particle **sync_particles(int *sizes, Particle **particles)
 
     // Free unused buffers.
     free(total_sizes);
-    free(particles);
 
     return final_particles;
 }
@@ -173,15 +174,15 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
 
     // Update the position and region of all particles, for the particles in the region
     // that this process is computing for.
-    particles_by_region = update_position_and_region(dt, spec, num_cores, particles_by_region, sizes, region_id);
+    Particle **updated_particles = update_position_and_region(dt, spec, num_cores, particles_by_region, sizes, region_id);
 
-    return particles_by_region;
+    return updated_particles;
 }
 
 /**
  * Runs the simulation according to the provided specifications.
  */
-void run_simulation(int *sizes, Particle **particles_by_region)
+Particle **run_simulation(int *sizes, Particle **particles_by_region)
 {
     char time_passed[TIMEBUF_LENGTH];
     int region_id = get_process_id();
@@ -205,6 +206,12 @@ void run_simulation(int *sizes, Particle **particles_by_region)
         format_time(time_passed, TIMEBUF_LENGTH, end - start);
         LL_VERBOSE("Region %d: Completed iteration %4.0ld in %s seconds", region_id, i + 1, time_passed);
     }
+
+    // Synchronise particles one more time.
+    particles_by_region = sync_particles(sizes, particles_by_region);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    return particles_by_region;
 }
 
 /**
@@ -217,6 +224,61 @@ void collate_timings()
 }
 
 /**
+ * Generates and collates canvases from all processes into the
+ * master process, so that we can generate a PPM heatmap.
+ * 
+ * Assumes that particles are already distributed across processes
+ * into their own regions already.
+ */
+void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *outputfile)
+{
+    int num_cores = get_num_cores();
+    int region_id = get_process_id();
+
+    // Allocate space for a 3-D array.
+    int ***collated = malloc(num_cores * sizeof(int **));
+    for (int region = 0; region < num_cores; region++) {
+        collated[region] = malloc(spec.GridSize * sizeof(int *));
+        for (int y = 0; y < spec.GridSize; y++)
+            collated[region][y] = malloc(spec.GridSize * sizeof(int));
+    }
+
+    // Generate canvas in the region that this process is in charge of.
+    print_particles(LOG_LEVEL_DEBUG, "Generating canvas for my region", sizes[region_id], particles_by_region[region_id]);
+    int **canvas = generate_region_canvas(spec.GridSize, sizes[region_id], particles_by_region[region_id]);
+    LL_VERBOSE("Canvas generated for region %d.", region_id);
+
+    // Send all canvases to the master process.
+    for (int region = 0; region < num_cores; region++) {
+        // Send each row of the canvas separately.
+        for (int y = 0; y < spec.GridSize; y++) {
+            // Only the P-th process should be sending to master.
+            if (region == region_id)
+                mpi_send(canvas[y], spec.GridSize, MPI_INT, MASTER_ID, 0, MPI_COMM_WORLD);
+
+            // Handle receiving from P processes.
+            if (is_master())
+                mpi_recv(collated[region][y], spec.GridSize, MPI_INT, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        }
+    }
+
+    if (is_master()) LL_VERBOSE("%s", "All canvases sent to master!");
+
+    // Generate the heatmap.
+    if (is_master()) generate_heatmap(spec, collated, outputfile);
+
+    // Free memory.
+    for (int region = 0; region < num_cores; region++) {
+        for (int y = 0; y < spec.GridSize; y++)
+            free(collated[region][y]);
+        free(collated[region]);
+    }
+
+    free(collated);
+    free(canvas);
+}
+
+/**
  * Only executed by the master process.
  * 
  * NOTE: There is no master-slave communication for the main simulation computation,
@@ -225,9 +287,9 @@ void collate_timings()
  */
 void master(char *specfile, char *outputfile)
 {
-    int region_id = get_process_id();
     int *sizes;
     Particle **particles_by_region;
+    int region_id = get_process_id();
 
     // Read the specification file into a struct (in parallel).
     spec = read_spec_file(region_id, specfile);
@@ -238,21 +300,19 @@ void master(char *specfile, char *outputfile)
 
     // Initialize arrays and generate particles.
     particles_by_region = init_particles(&sizes);
-
-    // Wait until all processes have generated particles.
     MPI_Barrier(MPI_COMM_WORLD);
 
-    LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
-
     // Run the simulation only in the region assigned.
+    LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
     run_simulation(sizes, particles_by_region);
+    MPI_Barrier(MPI_COMM_WORLD);
+    LL_NOTICE("%s", "Simulation completed!");
 
     // Master only: Get timings for all processes to generate report.
     collate_timings();
 
-    // Master only: Generate the heatmap.
-    // TODO: Collate particles from all regions into a single array.
-    // generate_heatmap(spec, particles, outputfile);
+    // Collate particles and generate the heatmap on the master process.
+    collate_generate_heatmap(sizes, particles_by_region, outputfile);
 }
 
 /**
@@ -275,6 +335,10 @@ void slave(char *specfile)
 
     // Run the simulation only in the region assigned.
     run_simulation(sizes, particles_by_region);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Collate particles and generate the heatmap on the master process.
+    collate_generate_heatmap(sizes, particles_by_region, NULL);
 }
 
 int main(int argc, char **argv)

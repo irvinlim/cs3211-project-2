@@ -7,6 +7,11 @@
 Particle **allocate_particles(int *sizes, int n_regions);
 
 /**
+ * Deallocate space that was reserved for a 2-D array of particles.
+ */
+void deallocate_particles(Particle **particles, int n_regions);
+
+/**
  * Generate both small and large particles for a single region, according to the given spec.
  * The positions of the small particles will be randomized anywhere within the region.
  */

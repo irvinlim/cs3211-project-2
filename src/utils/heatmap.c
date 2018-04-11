@@ -16,18 +16,15 @@
  * any value greater than BITMAP_MAX represents the body
  * of a large particle.
  */
-int **generate_region_canvas(Spec spec, Particle *particles)
+int **generate_region_canvas(int gridsize, int n, Particle *particles)
 {
-    // Get canvas length.
-    int canvas_length = spec.GridSize * spec.PoolLength;
-
     // Allocate enough memory for a 2-D canvas.
-    int **canvas = (int **)malloc(canvas_length * sizeof(int *));
-    for (int i = 0; i < canvas_length; i++)
-        canvas[i] = (int *)calloc(canvas_length, sizeof(int));
+    int **canvas = (int **)malloc(gridsize * sizeof(int *));
+    for (int i = 0; i < gridsize; i++)
+        canvas[i] = (int *)calloc(gridsize, sizeof(int));
 
     // Iterate through all particles.
-    for (int i = 0; i < spec.TotalNumberOfParticles; i++) {
+    for (int i = 0; i < n; i++) {
         Particle p = particles[i];
 
         // Round up the coordinates of the particle's radius to find bounding box.
@@ -43,7 +40,7 @@ int **generate_region_canvas(Spec spec, Particle *particles)
                     int y = p.y + j;
 
                     // Prevent drawing outside of the bounds of the array.
-                    if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length) continue;
+                    if (x < 0 || x >= gridsize || y < 0 || y >= gridsize) continue;
 
                     // If the particle size is large, we immediately set the value to BITMAP_MAX + 1.
                     // Otherwise, we will increment the value, up to BITMAP_MAX.
@@ -63,10 +60,10 @@ int **generate_region_canvas(Spec spec, Particle *particles)
  * Generate a heatmap of particles in all regions from a list of canvases, 
  * and saves it to an image file.
  */
-void generate_heatmap(Spec spec, int num_regions, int ***canvas_by_region, char *outputfile)
+void generate_heatmap(Spec spec, int ***canvas_by_region, char *outputfile)
 {
     // Get canvas length.
-    int canvas_length = num_regions * spec.GridSize * spec.PoolLength;
+    int canvas_length = spec.GridSize * spec.PoolLength;
 
     // Open file for writing.
     FILE *fp = fopen(outputfile, "w");

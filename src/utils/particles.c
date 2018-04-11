@@ -22,6 +22,15 @@ Particle **allocate_particles(int *sizes, int n_regions)
 }
 
 /**
+ * Deallocate space that was reserved for a 2-D array of particles.
+ */
+void deallocate_particles(Particle **particles, int n_regions)
+{
+    for (int i = 0; i < n_regions; i++) free(particles[i]);
+    free(particles);
+}
+
+/**
  * Generates small particles in random starting locations,
  * within the specified boundaries.
  */

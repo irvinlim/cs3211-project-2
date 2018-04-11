@@ -118,6 +118,6 @@ void print_canvas_info(Spec spec)
     int num_grids = spec.PoolLength * spec.PoolLength;
     int grid_size = spec.GridSize;
     int canvas_size = spec.GridSize * spec.PoolLength;
-    LL_NOTICE("Generated %d particle(s) in %d region(s) of size %dx%d each; Total canvas size is %dx%d.",
-        total_particles, num_grids, grid_size, grid_size, canvas_size, canvas_size);
+    LL_NOTICE("Generated %d particle(s) in %d region(s) of size %dx%d each; Total canvas size is %dx%d; Total number of particles is %d.",
+        total_particles, num_grids, grid_size, grid_size, canvas_size, canvas_size, total_particles * num_grids);
 }
