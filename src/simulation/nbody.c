@@ -107,6 +107,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
 
     // Free buffers.
     free(counters);
+    free(particles_by_region);
 
     return new_particles;
 }

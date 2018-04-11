@@ -55,38 +55,39 @@ Particle **init_particles(int **sizes)
 /**
  * Synchronises particles with other processes.
  * 
- * @param send_sizes                Sizes of array of particles to send, corresponding to each region.
- * @param send_particles_by_region  2-D array of particles, indexed by region ID.
- *                                  This array should only contain the particles computed by this processor.
- * @return                          2-D array of particles, indexed by region ID.
- *                                  This array should contain the updated particles after synchronisation.
+ * @param sizes         Sizes of array of particles to send, corresponding to each region.
+ * @param particles     2-D array of particles, indexed by region ID.
+ *                      This array should only contain the particles computed by this processor.
+ * @return              2-D array of particles, indexed by region ID.
+ *                      This array should contain the updated particles after synchronisation.
  */
-Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
+Particle **sync_particles(int *sizes, Particle **particles)
 {
     int num_cores = get_num_cores();
     int my_region = get_process_id();
 
     /// This processor needs to send the particles it computed to other processors.
     /// Other processors needs to receive the particles for its region, as well as for the horizon regions.
+    LL_MPI("%s", "Synchronising particles...");
 
     /// Step 1: Determine the total number of particles located in each region across all processes.
 
-    // Initialize an array to store the final sizes for all regions.
-    int *final_sizes = calloc(num_cores, sizeof(int));
+    // Initialize an array to store the total sizes for all regions.
+    int *total_sizes = calloc(num_cores, sizeof(int));
 
-    // This will sum up all items in the send_sizes array across all processes.
+    // This will sum up all items in the sizes array across all processes.
     // Note that the process doesn't necessarily need to know the size of every other region,
     // but since the data being sent is small enough we can afford to use Allreduce.
-    MPI_Allreduce(send_sizes, final_sizes, num_cores, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    print_ints(LOG_LEVEL_MPI, "All-reduced sizes in all processes", num_cores, final_sizes);
+    MPI_Allreduce(sizes, total_sizes, num_cores, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    print_ints(LOG_LEVEL_MPI, "Total region sizes across all processes", num_cores, total_sizes);
 
     // Allocate space in the final_particles array, based on the sizes we calculated earlier.
-    Particle **final_particles = allocate_particles(final_sizes, num_cores);
+    Particle **final_particles = allocate_particles(total_sizes, num_cores);
 
     /// Step 2: Send the particles that should belong to a particular region to that process.
 
     // Whatever this processor computed for its own region, we can keep.
-    memcpy(final_particles[my_region], send_particles_by_region[my_region], final_sizes[my_region] * sizeof(Particle));
+    memcpy(final_particles[my_region], particles[my_region], total_sizes[my_region] * sizeof(Particle));
 
     // Each process can receive particles (for the same region) from __any__ process.
     // This is because a process can compute a particle that ends up in a different process.
@@ -103,11 +104,11 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
                 if (dest == my_region) continue;
 
                 // First send the size of the subarray we are going to send.
-                mpi_send(&send_sizes[dest], 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-                LL_MPI("About to send %d particles to process %d.", send_sizes[dest], dest);
+                mpi_send(&sizes[dest], 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
+                LL_MPI("About to send %d particles to process %d.", sizes[dest], dest);
 
                 // Now we can send the array of particles that __belongs to the process' region__.
-                mpi_send(send_particles_by_region[dest], send_sizes[dest], mpi_particle_type, dest, 0, MPI_COMM_WORLD);
+                mpi_send(particles[dest], sizes[dest], mpi_particle_type, dest, 0, MPI_COMM_WORLD);
             }
         } else {
             /// Not my turn: Receive from other regions in order.
@@ -126,7 +127,7 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     }
 
     // Debug logging.
-    print_particle_ids(LOG_LEVEL_MPI, "Final IDs for my region", final_sizes[my_region], final_particles[my_region]);
+    print_particle_ids(LOG_LEVEL_MPI, "Final IDs for my region", total_sizes[my_region], final_particles[my_region]);
 
     /// Step 3: Duplicate the final particles to other horizon processes which will need it.
 
@@ -137,17 +138,21 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     // TODO: Should not truncate horizon regions once we sync horizon regions.
     for (int region = 0; region < num_cores; region++) {
         if (region != my_region)
-            send_sizes[region] = 0;
+            sizes[region] = 0;
         else
-            send_sizes[region] = final_sizes[region];
+            sizes[region] = total_sizes[region];
     }
 
-    print_ints(LOG_LEVEL_MPI, "Final sizes for this process", num_cores, send_sizes);
+    print_ints(LOG_LEVEL_MPI, "Final sizes for this process", num_cores, sizes);
 
     /// Complete!
 
     if (is_master()) LL_VERBOSE("Particle synchronization is complete between %d processes.", num_cores);
-    print_particles(LOG_LEVEL_MPI, send_sizes[my_region], final_particles[my_region]);
+    print_particles(LOG_LEVEL_MPI, sizes[my_region], final_particles[my_region]);
+
+    // Free unused buffers.
+    free(total_sizes);
+    free(particles);
 
     return final_particles;
 }
