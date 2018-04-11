@@ -78,6 +78,7 @@ Particle **sync_particles(int *sizes, Particle **particles)
     // This will sum up all items in the sizes array across all processes.
     // Note that the process doesn't necessarily need to know the size of every other region,
     // but since the data being sent is small enough we can afford to use Allreduce.
+    print_ints(LOG_LEVEL_MPI, "Region sizes that I am sending", num_cores, sizes);
     MPI_Allreduce(sizes, total_sizes, num_cores, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     print_ints(LOG_LEVEL_MPI, "Total region sizes across all processes", num_cores, total_sizes);
 
@@ -87,11 +88,11 @@ Particle **sync_particles(int *sizes, Particle **particles)
     /// Step 2: Send the particles that should belong to a particular region to that process.
 
     // Whatever this processor computed for its own region, we can keep.
-    memcpy(final_particles[my_region], particles[my_region], total_sizes[my_region] * sizeof(Particle));
+    memcpy(final_particles[my_region], particles[my_region], sizes[my_region] * sizeof(Particle));
 
     // Each process can receive particles (for the same region) from __any__ process.
     // This is because a process can compute a particle that ends up in a different process.
-    int total_received_size = 0;
+    int receive_offset = sizes[my_region];
     for (int region = 0; region < num_cores; region++) {
         // Loop through all regions __in order__, and see if it is this processor's turn to be sending particles.
 
@@ -119,10 +120,10 @@ Particle **sync_particles(int *sizes, Particle **particles)
             LL_MPI("About to receive %d particles from process %d.", subarray_recv_size, region);
 
             // Receive the particles from the other process that __belongs to my process' region__.
-            mpi_recv(&final_particles[my_region][total_received_size], subarray_recv_size, mpi_particle_type, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            mpi_recv(&final_particles[my_region][receive_offset], subarray_recv_size, mpi_particle_type, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             // Increment the size received so far.
-            total_received_size += subarray_recv_size;
+            receive_offset += subarray_recv_size;
         }
     }
 
