@@ -9,6 +9,7 @@
  * TODO: FILL THIS UP
  */
 
+#include <assert.h>
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -132,13 +133,7 @@ Particle **sync_particles(int *sizes, Particle **particles)
     // Debug logging.
     print_particle_ids(LOG_LEVEL_MPI, "Final IDs for my region", total_sizes[my_region], final_particles[my_region]);
 
-    /// Step 3: Duplicate the final particles to other horizon processes which will need it.
-
-    // TODO
-
-    /// Step 4: Truncate the sizes for regions we did not update in Step 3.
-
-    // TODO: Should not truncate horizon regions once we sync horizon regions.
+    /// Step 3: Truncate the sizes for all regions except the one that received all particles from.
     for (int region = 0; region < num_cores; region++) {
         if (region != my_region)
             sizes[region] = 0;
@@ -146,11 +141,35 @@ Particle **sync_particles(int *sizes, Particle **particles)
             sizes[region] = total_sizes[region];
     }
 
-    print_ints(LOG_LEVEL_MPI, "Final sizes for this process", num_cores, sizes);
+    /// Step 4: Duplicate the final particles to other horizon processes which will need it.
+    for (int receiver = 0; receiver < num_cores; receiver++) {
+        for (int sender = 0; sender < num_cores; sender++) {
+            if (sender == receiver) continue;
+            if (my_region != sender && my_region != receiver) continue;
+
+            // Check the horizon distance between any two pairs of regions.
+            int horizon_dist = get_horizon_dist(spec.PoolLength, sender, receiver);
+            assert(horizon_dist >= 0);
+            if (horizon_dist > spec.Horizon) continue;
+
+            // Send the particles.
+            if (sender == my_region) {
+                LL_MPI("Sending %d particles to %d", sizes[my_region], receiver);
+                mpi_send(final_particles[my_region], sizes[my_region], mpi_particle_type, receiver, 0, MPI_COMM_WORLD);
+            } else if (receiver == my_region) {
+                LL_MPI("Receiving %d particles from %d", total_sizes[my_region], sender);
+                mpi_recv(final_particles[sender], total_sizes[sender], mpi_particle_type, sender, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            }
+
+            // Update the size as well.
+            sizes[sender] = total_sizes[sender];
+        }
+    }
 
     /// Complete!
 
     if (is_master()) LL_VERBOSE("Particle synchronisation is complete between %d processes.", num_cores);
+    print_ints(LOG_LEVEL_MPI, "Final region sizes for this process", num_cores, sizes);
     print_particles(LOG_LEVEL_MPI, "Particles in my region after synchronisation", sizes[my_region], final_particles[my_region]);
 
     // Free unused buffers.
