@@ -57,7 +57,7 @@ Because multiple processes may be trying to write to the output buffer (which is
 To help with this, you can limit the logging process to only a certain process so that all log messages are guaranteed to be in order with the `LOG_PROCESS` environment variable, such as follows:
 
 ```sh
-LOG_LEVEL=6 LOG_PROCESS=0 mpirun -np4 pool initialspec.txt finalbrd.ppm
+LOG_LEVEL=6 LOG_PROCESS=0 mpirun -np 4 pool initialspec.txt finalbrd.ppm
 ```
 
 ### Variants
