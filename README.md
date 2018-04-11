@@ -41,12 +41,23 @@ You can increase the verbosity of the output by passing the `LOG_LEVEL` environm
 * **3 - NOTICE (Default)**: Also show notices
 * **4 - VERBOSE**: Show some verbose messages
 * **5 - MPI**: Show verbose messages as well as MPI traces between processes
-* **6 - DEBUG**: Maximum verbosity
+* **6 - DEBUG**: Debug mode
+* **7 - DEBUG2**: Additional debug messages
 
 For example, to increase the verbosity to VERBOSE, you can do
 
 ```sh
 LOG_LEVEL=4 mpirun -np 64 pool initialspec.txt finalbrd.ppm
+```
+
+### Logging for a single process
+
+Because multiple processes may be trying to write to the output buffer (which is `stderr` for this program) at the same time, the log messages will often be interleaved which makes it hard to follow especially on higher log levels.
+
+To help with this, you can limit the logging process to only a certain process so that all log messages are guaranteed to be in order with the `LOG_PROCESS` environment variable, such as follows:
+
+```sh
+LOG_LEVEL=6 LOG_PROCESS=0 mpirun -np4 pool initialspec.txt finalbrd.ppm
 ```
 
 ### Variants
