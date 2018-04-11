@@ -43,11 +43,11 @@ Particle **init_particles(int **sizes)
 
     // Allocate space for particles and their array sizes.
     *sizes = (int *)calloc(num_cores, sizeof(int));
-    (*sizes)[region_id] = spec.TotalNumberOfParticles;
     Particle **particles = allocate_particles(*sizes, num_cores);
 
     // Generate particles for __this region only__.
-    particles[region_id] = generate_particles(spec);
+    particles[region_id] = generate_particles(region_id, spec);
+    (*sizes)[region_id] = spec.TotalNumberOfParticles;
 
     return particles;
 }
@@ -219,11 +219,12 @@ void collate_timings()
  */
 void master(char *specfile, char *outputfile)
 {
+    int region_id = get_process_id();
     int *sizes;
     Particle **particles_by_region;
 
     // Read the specification file into a struct (in parallel).
-    spec = read_spec_file(specfile);
+    spec = read_spec_file(region_id, specfile);
 
     // Debug print all read-in values.
     print_spec(spec);
@@ -253,11 +254,12 @@ void master(char *specfile, char *outputfile)
  */
 void slave(char *specfile)
 {
+    int region_id = get_process_id();
     int *sizes;
     Particle **particles_by_region;
 
     // Read the specification file into a struct (in parallel).
-    spec = read_spec_file(specfile);
+    spec = read_spec_file(region_id, specfile);
 
     // Initialize arrays and generate particles.
     particles_by_region = init_particles(&sizes);

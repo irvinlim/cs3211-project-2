@@ -14,7 +14,7 @@
  * Generates small particles in random starting locations,
  * within the specified boundaries.
  */
-Particle *generate_small_particles(Spec spec, int n, int grid_size, long double start_x, long double start_y)
+Particle *generate_small_particles(int region_id, Spec spec, int n, int grid_size, long double start_x, long double start_y)
 {
     // Initialize PRNG.
     time_t t;
@@ -26,8 +26,8 @@ Particle *generate_small_particles(Spec spec, int n, int grid_size, long double 
     // Generate small particles at random starting locations.
     for (int i = 0; i < n; i++) {
         particles[i] = (Particle){
-            .id = i + spec.NumberOfLargeParticles,
-            .region = -1, // actual region is found in the 2-D array key, this is only used for storing state during computation
+            .id = region_id * spec.TotalNumberOfParticles + spec.NumberOfLargeParticles + i,
+            .region = region_id,
             .size = SMALL,
             .mass = spec.SmallParticleMass,
             .radius = spec.SmallParticleRadius,
@@ -45,7 +45,7 @@ Particle *generate_small_particles(Spec spec, int n, int grid_size, long double 
  * Generate both small and large particles for a single region, according to the given spec.
  * The positions of the small particles will be randomized anywhere within the region.
  */
-Particle *generate_particles(Spec spec)
+Particle *generate_particles(int region_id, Spec spec)
 {
     // The small particles should be generated for a single region, not all regions.
     int grid_size = spec.GridSize;
@@ -58,7 +58,7 @@ Particle *generate_particles(Spec spec)
     memcpy(particles, spec.LargeParticles, large_particles_len);
 
     // Generate small particles and allocate to the buffer.
-    Particle *small_particles = generate_small_particles(spec, spec.NumberOfSmallParticles, grid_size, 0, 0);
+    Particle *small_particles = generate_small_particles(region_id, spec, spec.NumberOfSmallParticles, grid_size, 0, 0);
     size_t small_particles_len = spec.NumberOfSmallParticles * sizeof(Particle);
     memcpy(&particles[spec.NumberOfLargeParticles], small_particles, small_particles_len);
 

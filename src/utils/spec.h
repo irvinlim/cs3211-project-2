@@ -3,7 +3,7 @@
 /**
  * Reads the specification file.
  */
-Spec read_spec_file(char *specfile);
+Spec read_spec_file(int region_id, char *specfile);
 
 /**
  * Debug prints the Spec.

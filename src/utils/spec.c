@@ -11,7 +11,7 @@
 /**
  * Reads the specification file.
  */
-Spec read_spec_file(char *specfile)
+Spec read_spec_file(int region_id, char *specfile)
 {
     // Open the specification file.
     FILE *fp = fopen(specfile, "r");
@@ -66,8 +66,8 @@ Spec read_spec_file(char *specfile)
 
     // Fill missing values for large particles.
     for (int i = 0; i < spec.NumberOfLargeParticles; i++) {
-        spec.LargeParticles[i].id = i;
-        spec.LargeParticles[i].region = -1;
+        spec.LargeParticles[i].id = region_id * spec.TotalNumberOfParticles + i;
+        spec.LargeParticles[i].region = region_id;
         spec.LargeParticles[i].size = LARGE;
         spec.LargeParticles[i].vx = 0.0L;
         spec.LargeParticles[i].vy = 0.0L;
@@ -105,7 +105,7 @@ void print_spec(Spec spec)
     LL_VERBOSE("%s: ", "Large particle data");
 
     for (int i = 0; i < spec.NumberOfLargeParticles; i++)
-        print_particle(LOG_LEVEL_DEBUG, spec.LargeParticles[i]);
+        print_particle(LOG_LEVEL_VERBOSE, spec.LargeParticles[i]);
 }
 
 /**

@@ -5,7 +5,7 @@
  * Generate both small and large particles for a single region, according to the given spec.
  * The positions of the small particles will be randomized anywhere within the region.
  */
-Particle *generate_particles(Spec spec);
+Particle *generate_particles(int region_id, Spec spec);
 
 /**
  * Generate a heatmap of particles and saves it to a file.
