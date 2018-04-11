@@ -1,9 +1,12 @@
+#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "common.h"
 #include "log.h"
+
+#define INT_MAX_LEN 12
 
 /**
  * Checks whether the number of arguments are satisfied.
@@ -42,4 +45,18 @@ void join_ints(char *buf, char delimiter, int n, int *ints)
 
     // Add null-terminating character.
     buf[currentlen++] = 0;
+}
+
+/**
+ * Prints an array of integers, separated with commas.
+ */
+void print_ints(LogLevel log_level, char *msg, int n, int *ints)
+{
+    char *logbuf = malloc(n * INT_MAX_LEN);
+    assert(logbuf != NULL);
+
+    join_ints(logbuf, ',', n, ints);
+    LOG(log_level, "%s: %s", msg, logbuf);
+
+    free(logbuf);
 }

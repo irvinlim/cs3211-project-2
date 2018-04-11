@@ -65,7 +65,6 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
 {
     int num_cores = get_num_cores();
     int my_region = get_process_id();
-    char *logbuf = malloc(num_cores * 12);
 
     /// This processor needs to send the particles it computed to other processors.
     /// Other processors needs to receive the particles for its region, as well as for the horizon regions.
@@ -79,11 +78,7 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
     // Note that the process doesn't necessarily need to know the size of every other region,
     // but since the data being sent is small enough we can afford to use Allreduce.
     MPI_Allreduce(send_sizes, final_sizes, num_cores, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-
-    // Debug logging.
-    join_ints(logbuf, ',', num_cores, final_sizes);
-    LL_MPI("Final sizes of regions - %s", logbuf);
-    if (is_master()) LL_MPI("%s", "Make sure that all regions have the same final sizes.");
+    print_ints(LOG_LEVEL_MPI, "All-reduced sizes in all processes", num_cores, final_sizes);
 
     // Allocate space in the final_particles array, based on the sizes we calculated earlier.
     Particle **final_particles = allocate_particles(final_sizes, num_cores);
@@ -109,7 +104,6 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
 
                 // First send the size of the subarray we are going to send.
                 mpi_send(&send_sizes[dest], 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-
                 LL_MPI("About to send %d particles to process %d.", send_sizes[dest], dest);
 
                 // Now we can send the array of particles that __belongs to the process' region__.
@@ -148,15 +142,13 @@ Particle **sync_particles(int *send_sizes, Particle **send_particles_by_region)
             send_sizes[region] = final_sizes[region];
     }
 
-    join_ints(logbuf, ',', num_cores, send_sizes);
-    LL_MPI("Final sizes for this process - %s", logbuf);
+    print_ints(LOG_LEVEL_MPI, "Final sizes for this process", num_cores, send_sizes);
 
     /// Complete!
 
     if (is_master()) LL_VERBOSE("Particle synchronization is complete between %d processes.", num_cores);
     print_particles(LOG_LEVEL_MPI, send_sizes[my_region], final_particles[my_region]);
 
-    free(logbuf);
     return final_particles;
 }
 

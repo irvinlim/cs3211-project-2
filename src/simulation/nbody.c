@@ -27,9 +27,6 @@
  */
 Particle **update_position_and_region(long double dt, Spec spec, int num_regions, Particle **particles_by_region, int *sizes, int region_id)
 {
-    char *logbuf = malloc(num_regions * 12);
-    assert(logbuf != NULL);
-
     // First we store the number of particles that we had computed (and wish to update positions for).
     int n = sizes[region_id];
     LL_DEBUG("Updating positions and regions of %d particles in region %d:", n, region_id);
@@ -71,8 +68,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Debug print the final sizes.
-    join_ints(logbuf, ',', num_regions, sizes);
-    LL_DEBUG2("Resultant sizes: %s", logbuf);
+    print_ints(LOG_LEVEL_DEBUG2, "Resultant sizes", num_regions, sizes);
 
     // Keep track of number of particles stored within each region.
     int *counters = calloc(num_regions, sizeof(int));
@@ -98,8 +94,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Debug print the final sizes.
-    join_ints(logbuf, ',', num_regions, counters);
-    LL_DEBUG2("Resultant counters: %s", logbuf);
+    print_ints(LOG_LEVEL_DEBUG2, "Resultant counters", num_regions, counters);
 
     // Ensure that the sizes for counters and tabulated sizes are equal.
     for (int i = 0; i < num_regions; i++) assert(counters[i] == sizes[i]);
@@ -112,7 +107,6 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
 
     // Free buffers.
     free(counters);
-    free(logbuf);
 
     return new_particles;
 }
