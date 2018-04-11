@@ -25,7 +25,7 @@ void print_particle(LogLevel level, Particle particle);
 /**
  * Debug prints all particles.
  */
-void print_particles(LogLevel level, int n, Particle *particles);
+void print_particles(LogLevel level, char *msg, int n, Particle *particles);
 
 /**
  * Prints a concatenated list of all particle IDs.

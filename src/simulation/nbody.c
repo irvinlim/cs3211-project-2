@@ -68,7 +68,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
     }
 
     // Debug print the final sizes.
-    print_ints(LOG_LEVEL_DEBUG2, "Resultant sizes", num_regions, sizes);
+    print_ints(LOG_LEVEL_DEBUG2, "Resultant sizes after updating positions", num_regions, sizes);
 
     // Keep track of number of particles stored within each region.
     int *counters = calloc(num_regions, sizeof(int));
@@ -85,7 +85,6 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         int region = particles_by_region[region_id][i].region;
 
         // Append the particle into the array.
-        LL_DEBUG2("+ i = %d, region = %d, counters[region] = %d", i, region, counters[region]);
         memcpy(&new_particles[region][counters[region]], &particles_by_region[region_id][i], sizeof(Particle));
 
         // Increment the counter.
@@ -93,16 +92,14 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         assert(counters[region] > 0 && counters[region] <= spec.TotalNumberOfParticles * num_regions);
     }
 
-    // Debug print the final sizes.
-    print_ints(LOG_LEVEL_DEBUG2, "Resultant counters", num_regions, counters);
-
     // Ensure that the sizes for counters and tabulated sizes are equal.
     for (int i = 0; i < num_regions; i++) assert(counters[i] == sizes[i]);
 
     // Debug particles that were copied into the new array.
+    char msg[50];
     for (int i = 0; i < num_regions; i++) {
-        LL_DEBUG2("Displaying %d particles in region %d:", sizes[i], i);
-        print_particles(LOG_LEVEL_DEBUG2, sizes[i], new_particles[i]);
+        sprintf(msg, "Dump of particles for region %d", i);
+        print_particles(LOG_LEVEL_DEBUG2, msg, sizes[i], new_particles[i]);
     }
 
     // Free buffers.

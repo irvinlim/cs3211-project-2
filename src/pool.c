@@ -148,8 +148,8 @@ Particle **sync_particles(int *sizes, Particle **particles)
 
     /// Complete!
 
-    if (is_master()) LL_VERBOSE("Particle synchronization is complete between %d processes.", num_cores);
-    print_particles(LOG_LEVEL_MPI, sizes[my_region], final_particles[my_region]);
+    if (is_master()) LL_VERBOSE("Particle synchronisation is complete between %d processes.", num_cores);
+    print_particles(LOG_LEVEL_MPI, "Particles in my region after synchronisation", sizes[my_region], final_particles[my_region]);
 
     // Free unused buffers.
     free(total_sizes);

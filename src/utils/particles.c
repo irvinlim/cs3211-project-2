@@ -74,7 +74,7 @@ Particle *generate_particles(int region_id, Spec spec)
     memcpy(&particles[spec.NumberOfLargeParticles], small_particles, small_particles_len);
 
     // Debug print all particles.
-    print_particles(LOG_LEVEL_DEBUG, spec.TotalNumberOfParticles, particles);
+    print_particles(LOG_LEVEL_DEBUG, "Generated particles", spec.TotalNumberOfParticles, particles);
 
     return particles;
 }
@@ -112,11 +112,11 @@ void print_particle_ids(LogLevel level, char *msg, int n, Particle *particles)
 /**
  * Debug prints all particles.
  */
-void print_particles(LogLevel level, int n, Particle *particles)
+void print_particles(LogLevel level, char *msg, int n, Particle *particles)
 {
     if (n <= 0) return;
 
-    LOG(level, "Dump of all %d particles: ", n);
+    LOG(level, "%s (%d particles): ", msg, n);
 
     for (int i = 0; i < n; i++)
         LOG(level,
