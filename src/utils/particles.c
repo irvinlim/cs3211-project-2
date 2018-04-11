@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "common.h"
 #include "log.h"
 #include "multiproc.h"
 #include "particles.h"
@@ -188,37 +189,14 @@ void print_particle(LogLevel level, Particle particle)
  */
 void print_particle_ids(LogLevel level, char *msg, int n, Particle *particles)
 {
-    char delimiter = ',';
+    // Don't do anything if log_level is lesser than level (optimisation).
+    if (level < log_level) return;
 
-    // Get the maximum possible size of the string.
-    int maxdigits = ceil(log10(n));
-    int maxlen = maxdigits * n + n + 1;
-
-    // Allocate a buffer large enough to put our string.
-    char *buf = calloc(maxlen, sizeof(char));
-
-    // Concatenate all IDs into a string.
-    int currentlen = 0;
-    for (int i = 0; i < n; i++) {
-        int len = particles[i].id <= 1 ? 1 : ceil(log10(particles[i].id));
-
-        // Add the ID to the buffer.
-        sprintf(&buf[currentlen], "%d", particles[i].id);
-        currentlen += len;
-
-        // Add a delimiter.
-        if (i < n - 1) buf[currentlen++] = delimiter;
-    }
-
-    if (currentlen == 0) {
-        sprintf(buf, "None");
-        currentlen += 4;
-    }
-
-    // Add null-terminating character.
-    buf[currentlen++] = 0;
-
-    LOG(level, "Process %d: %s - %s", get_process_id(), msg, buf);
+    // Map all IDs from Particles to print.
+    int *ids = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) ids[i] = particles[i].id;
+    print_ints(level, msg, n, ids);
+    free(ids);
 }
 
 /**
