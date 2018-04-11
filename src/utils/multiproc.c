@@ -9,7 +9,7 @@
 #include "types.h"
 
 #define MASTER_ID 0
-#define PARTICLE_FIELD_COUNT 8
+#define PARTICLE_FIELD_COUNT 9
 
 /**
  * MPI rank number.
@@ -44,10 +44,11 @@ void multiproc_finalize()
  */
 void mpi_init_particle(MPI_Datatype *newtype)
 {
-    int blocklengths[PARTICLE_FIELD_COUNT] = { 1, 1, 1, 1, 1, 1, 1 };
+    int blocklengths[PARTICLE_FIELD_COUNT] = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
     MPI_Aint displacements[PARTICLE_FIELD_COUNT] = {
         offsetof(Particle, id),
+        offsetof(Particle, region),
         offsetof(Particle, size),
         offsetof(Particle, mass),
         offsetof(Particle, radius),
@@ -58,6 +59,7 @@ void mpi_init_particle(MPI_Datatype *newtype)
     };
 
     MPI_Datatype types[PARTICLE_FIELD_COUNT] = {
+        MPI_INT,
         MPI_INT,
         MPI_INT,
         MPI_LONG_DOUBLE,
