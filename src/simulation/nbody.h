@@ -2,7 +2,6 @@
 
 /**
  * Updates the position and region of a particle for a given timestep.
- * TODO: This function should wrap-around particles that exceed the grid boundaries.
  * 
  * @param dt                    The time step value.
  * @param spec                  The program specification.
