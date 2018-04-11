@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +53,29 @@ long double denorm_region_x(long double x, int region_id, Spec spec)
 long double denorm_region_y(long double y, int region_id, Spec spec)
 {
     return y + get_region_y(region_id, spec) * spec.GridSize;
+}
+
+/**
+ * Normalizes a coordinate wrt region.
+ */
+long double norm_region(long double coord, Spec spec)
+{
+    return fmodl(coord, spec.GridSize);
+}
+
+/**
+ * Wraps around a coordinate.
+ */
+long double wrap_around(long double coord, int max_coord)
+{
+    while (coord < 0 || coord >= max_coord) {
+        if (coord < 0)
+            coord += max_coord;
+        else if (coord >= max_coord)
+            coord -= max_coord;
+    }
+
+    return coord;
 }
 
 /**

@@ -46,8 +46,8 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         particles_by_region[region_id][i].y += dt * particles_by_region[region_id][i].vy;
 
         // Wrap the particle around all regions if necessary.
-        particles_by_region[region_id][i].x = fmodl(particles_by_region[region_id][i].x, spec.GridSize * spec.PoolLength);
-        particles_by_region[region_id][i].y = fmodl(particles_by_region[region_id][i].y, spec.GridSize * spec.PoolLength);
+        particles_by_region[region_id][i].x = wrap_around(particles_by_region[region_id][i].x, spec.GridSize * spec.PoolLength);
+        particles_by_region[region_id][i].y = wrap_around(particles_by_region[region_id][i].y, spec.GridSize * spec.PoolLength);
 
         // Calculate the region of the new position.
         int region = get_region(particles_by_region[region_id][i], spec);
@@ -58,8 +58,8 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         particles_by_region[region_id][i].region = region;
 
         // Re-normalize the position wrt region.
-        particles_by_region[region_id][i].x = fmodl(particles_by_region[region_id][i].x, spec.GridSize);
-        particles_by_region[region_id][i].y = fmodl(particles_by_region[region_id][i].y, spec.GridSize);
+        particles_by_region[region_id][i].x = norm_region(particles_by_region[region_id][i].x, spec);
+        particles_by_region[region_id][i].y = norm_region(particles_by_region[region_id][i].y, spec);
 
         Particle p = particles_by_region[region_id][i];
         LL_DEBUG2("  Velocity   = (%0.9Lf, %0.9Lf), Displacement = (%0.9Lf, %0.9Lf)", p.vx, p.vy, dt * p.vx, dt * p.vy);
