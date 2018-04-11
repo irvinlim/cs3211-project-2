@@ -155,6 +155,7 @@ Particle **sync_particles(int *sizes, Particle **particles)
 
     // Free unused buffers.
     free(total_sizes);
+    deallocate_particles(particles, num_cores);
 
     return final_particles;
 }
@@ -304,7 +305,7 @@ void master(char *specfile, char *outputfile)
 
     // Run the simulation only in the region assigned.
     LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
-    run_simulation(sizes, particles_by_region);
+    particles_by_region = run_simulation(sizes, particles_by_region);
     MPI_Barrier(MPI_COMM_WORLD);
     LL_NOTICE("%s", "Simulation completed!");
 
@@ -334,7 +335,7 @@ void slave(char *specfile)
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Run the simulation only in the region assigned.
-    run_simulation(sizes, particles_by_region);
+    particles_by_region = run_simulation(sizes, particles_by_region);
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Collate particles and generate the heatmap on the master process.
