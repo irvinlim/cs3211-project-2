@@ -40,18 +40,3 @@ long double wrap_around(long double coord, int max_coord);
  * relative to the number of regions (provided by pool_length).
  */
 int get_horizon_dist(int pool_length, int r1, int r2);
-
-/**
- * Allocates space for a 2-D array of arrays of particles, indexed by region.
- */
-Particle **allocate_particles(int *sizes, int n_regions);
-
-/**
- * Allocates space for as many particles as there are for each region.
- */
-Particle **allocate_max_particles(int max_size, int n_regions);
-
-/**
- * Filters an array of particles by region.
- */
-Particle *filter_by_region(int *n_filtered, Spec spec, int region_id, Particle *p, int n);
