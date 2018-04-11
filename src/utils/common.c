@@ -50,13 +50,13 @@ void join_ints(char *buf, char delimiter, int n, int *ints)
 /**
  * Prints an array of integers, separated with commas.
  */
-void print_ints(LogLevel log_level, char *msg, int n, int *ints)
+void print_ints(LogLevel level, char *msg, int n, int *ints)
 {
     char *logbuf = malloc(n * INT_MAX_LEN);
     assert(logbuf != NULL);
 
     join_ints(logbuf, ',', n, ints);
-    LOG(log_level, "%s: %s", msg, logbuf);
+    LOG(level, "%s: %s", msg, logbuf);
 
     free(logbuf);
 }

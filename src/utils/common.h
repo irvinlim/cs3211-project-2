@@ -14,4 +14,4 @@ void join_ints(char *buf, char delimiter, int n, int *ints);
 /**
  * Prints an array of integers, separated with commas.
  */
-void print_ints(LogLevel log_level, char *msg, int n, int *ints);
+void print_ints(LogLevel level, char *msg, int n, int *ints);
