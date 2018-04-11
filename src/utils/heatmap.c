@@ -4,6 +4,7 @@
 
 #include "log.h"
 #include "particles.h"
+#include "regions.h"
 
 #define BITMAP_MAX 255
 
@@ -14,10 +15,8 @@
  * the presence of the body of a small particle, while
  * any value greater than BITMAP_MAX represents the body
  * of a large particle.
- * 
- * TODO: Handle 2-D particles array.
  */
-int **generate_canvas(Spec spec, Particle *particles)
+int **generate_region_canvas(Spec spec, Particle *particles)
 {
     // Get canvas length.
     int canvas_length = spec.GridSize * spec.PoolLength;
@@ -61,14 +60,13 @@ int **generate_canvas(Spec spec, Particle *particles)
 }
 
 /**
- * Generate a heatmap of particles and saves it to an image file.
- * 
- * TODO: Handle 2-D particles array.
+ * Generate a heatmap of particles in all regions from a list of canvases, 
+ * and saves it to an image file.
  */
-void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
+void generate_heatmap(Spec spec, int num_regions, int ***canvas_by_region, char *outputfile)
 {
     // Get canvas length.
-    int canvas_length = spec.GridSize * spec.PoolLength;
+    int canvas_length = num_regions * spec.GridSize * spec.PoolLength;
 
     // Open file for writing.
     FILE *fp = fopen(outputfile, "w");
@@ -80,18 +78,20 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
     // Print PPM header.
     fprintf(fp, "P3\n%d %d\n%d\n", canvas_length, canvas_length, BITMAP_MAX);
 
-    // Generate canvas from the list of particles.
-    int **canvas = generate_canvas(spec, particles);
-
-    // Print each cell.
+    // Print each cell in the entire canvas.
     for (int y = 0; y < canvas_length; y++) {
         for (int x = 0; x < canvas_length; x++) {
+            int region = get_denorm_region(x, y, spec);
+            int nx = norm_region_int(x, spec);
+            int ny = norm_region_int(y, spec);
+            int cell = canvas_by_region[region][ny][nx];
+
             // If the value is greater than BITMAP_MAX, we draw a blue pixel.
             // Otherwise, we draw a red pixel whose intensity is the value.
-            if (canvas[y][x] > BITMAP_MAX)
+            if (cell > BITMAP_MAX)
                 fprintf(fp, "0 0 %d", BITMAP_MAX);
             else
-                fprintf(fp, "%d 0 0", canvas[y][x]);
+                fprintf(fp, "%d 0 0", cell);
 
             if (x < canvas_length - 1)
                 fprintf(fp, " ");
@@ -105,5 +105,4 @@ void generate_heatmap(Spec spec, Particle *particles, char *outputfile)
 
     // Clean up.
     fclose(fp);
-    free(canvas);
 }

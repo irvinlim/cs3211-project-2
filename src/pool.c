@@ -15,11 +15,11 @@
 #include <string.h>
 
 #include "simulation/nbody.h"
-#include "simulation/regions.h"
 #include "utils/common.h"
 #include "utils/log.h"
 #include "utils/multiproc.h"
 #include "utils/particles.h"
+#include "utils/regions.h"
 #include "utils/spec.h"
 #include "utils/timer.h"
 

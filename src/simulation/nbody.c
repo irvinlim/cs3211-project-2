@@ -7,8 +7,8 @@
 #include "../utils/common.h"
 #include "../utils/log.h"
 #include "../utils/particles.h"
+#include "../utils/regions.h"
 #include "../utils/types.h"
-#include "regions.h"
 
 #define SOFTENING_CONSTANT 10E-9F
 
@@ -50,7 +50,7 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
         particles_by_region[region_id][i].y = wrap_around(particles_by_region[region_id][i].y, spec.GridSize * spec.PoolLength);
 
         // Calculate the region of the new position.
-        int region = get_region(particles_by_region[region_id][i], spec);
+        int region = get_denorm_particle_region(particles_by_region[region_id][i], spec);
         LL_DEBUG("  Region = %d", region);
         sizes[region]++;
 

@@ -8,10 +8,26 @@
 /**
  * Returns the region that a particle resides in.
  */
-int get_region(Particle p, Spec spec)
+int get_denorm_particle_region(Particle p, Spec spec)
 {
     int region_x = p.x / spec.GridSize;
     int region_y = p.y / spec.GridSize;
+
+    // Limit the region IDs to be bounded to the corner regions, just in case.
+    // Particles should be wrapped around when they exceed the boundaries of the canvas.
+    region_x = region_x < 0 ? 0 : region_x >= spec.PoolLength ? spec.PoolLength - 1 : region_x;
+    region_y = region_y < 0 ? 0 : region_y >= spec.PoolLength ? spec.PoolLength - 1 : region_y;
+
+    return region_y * spec.PoolLength + region_x;
+}
+
+/**
+ * Returns the region that a denormalized coordinate resides in.
+ */
+int get_denorm_region(int x, int y, Spec spec)
+{
+    int region_x = x / spec.GridSize;
+    int region_y = y / spec.GridSize;
 
     // Limit the region IDs to be bounded to the corner regions, just in case.
     // Particles should be wrapped around when they exceed the boundaries of the canvas.
@@ -59,6 +75,14 @@ long double denorm_region_y(long double y, int region_id, Spec spec)
 long double norm_region(long double coord, Spec spec)
 {
     return fmodl(coord, spec.GridSize);
+}
+
+/**
+ * Normalizes a coordinate wrt region.
+ */
+int norm_region_int(int coord, Spec spec)
+{
+    return coord % spec.GridSize;
 }
 
 /**

@@ -3,7 +3,12 @@
 /**
  * Returns the region that a particle resides in.
  */
-int get_region(Particle p, Spec spec);
+int get_denorm_particle_region(Particle p, Spec spec);
+
+/**
+ * Returns the region that a denormalized coordinate resides in.
+ */
+int get_denorm_region(int x, int y, Spec spec);
 
 /**
  * Returns the x-coordinate of a region.
@@ -29,6 +34,11 @@ long double denorm_region_y(long double y, int region_id, Spec spec);
  * Normalizes a coordinate wrt region.
  */
 long double norm_region(long double coord, Spec spec);
+
+/**
+ * Normalizes a coordinate wrt region.
+ */
+int norm_region_int(int coord, Spec spec);
 
 /**
  * Wraps around a coordinate.

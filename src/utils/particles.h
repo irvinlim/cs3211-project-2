@@ -13,11 +13,6 @@ Particle **allocate_particles(int *sizes, int n_regions);
 Particle *generate_particles(int region_id, Spec spec);
 
 /**
- * Generate a heatmap of particles and saves it to a file.
- */
-void generate_heatmap(Spec spec, Particle *particles, char *outputfile);
-
-/**
  * Debug prints details about a particle.
  */
 void print_particle(LogLevel level, Particle particle);
