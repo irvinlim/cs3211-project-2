@@ -4,9 +4,6 @@
  * For the parallel version of the program, the number of regions
  * will be taken from the number of processes (as indicated through
  * the -np flag), as expected.
- * 
- * This variant of the program uses the following communication strategy:
- * TODO: FILL THIS UP
  */
 
 #include <assert.h>
