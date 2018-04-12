@@ -17,21 +17,44 @@
 ## Name of queue to submit job to.
 #PBS -q normal
 
-###
-
 module load openmpi/intel/1.10.2
 
-LOGFILE=logs/pool_`date '+%Y%m%d_%H%M%S'`.log
+###########
+
+# Specify the program parameters here.
+
+PROG=pool
+NUM_PROCS=4
+LOG_LEVEL=4
+
+###########
+
+# Prepare output files and directories.
+
+DATE=`date '+%Y%m%d_%H%M%S'`
 SPECFILE=initialspec-nscc.txt
-OUTPUTFILE=output/finalbrd_`date '+%Y%m%d_%H%M%S'`.ppm
+LOGFILE="logs/pool_$DATE.log"
+OUTPUTFILE="output/finalbrd_$DATE.ppm"
+REPORTFILE="report/report_$DATE.txt"
 
 cd $PBS_O_WORKDIR
 mkdir -p logs
 mkdir -p output
+echo > "$LOGFILE"
 
-echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." > "$LOGFILE"
+###########
+
+# Run the job.
+
+echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." >> "$LOGFILE"
 echo "==============================================" >> "$LOGFILE"
 echo "" >> "$LOGFILE"
 
-export LOG_LEVEL=4
-mpirun -np 4 pool "$SPECFILE" "$OUTPUTFILE" >> "$LOGFILE" 2>&1
+echo mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" >> "$LOGFILE" 2>&1
+export LOG_LEVEL
+echo "LOG_LEVEL=$LOG_LEVEL"
+mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" >> "$LOGFILE" 2>&1
+
+echo "" >> "$LOGFILE"
+echo "==============================================" >> "$LOGFILE"
+echo "Job finished at `date '+%Y-%m-%d %H:%M:%S'`." >> "$LOGFILE"
