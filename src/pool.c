@@ -299,88 +299,48 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 }
 
 /**
- * Only executed by the master process.
- * 
- * NOTE: There is no master-slave communication for the main simulation computation,
- * but in order to streamline log messages, only the master process should write
- * to the output buffer.
+ * Main method for the structue of the entire program.
  */
-void master(char *specfile, char *outputfile)
+void start(char *specfile, char *outputfile)
 {
     int *sizes;
     Particle **particles_by_region;
     int region_id = get_process_id();
 
+    if (is_master()) LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), get_num_cores());
+
     // Read the specification file into a struct (in parallel).
     spec = read_spec_file(region_id, specfile);
 
     // Debug print all read-in values.
-    print_spec(spec);
-    print_canvas_info(spec);
+    if (is_master()) print_spec(spec);
+    if (is_master()) print_canvas_info(spec);
 
     // Initialize arrays and generate particles.
     particles_by_region = init_particles(&sizes);
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Run the simulation only in the region assigned.
-    LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
+    if (is_master()) LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
     particles_by_region = run_simulation(sizes, particles_by_region);
     MPI_Barrier(MPI_COMM_WORLD);
-    LL_NOTICE("%s", "Simulation completed!");
+    if (is_master()) LL_NOTICE("%s", "Simulation completed!");
 
-    // Master only: Get timings for all processes to generate report.
+    // Collate timings from all processes to generate a report.
     collate_timings();
 
     // Collate particles and generate the heatmap on the master process.
     collate_generate_heatmap(sizes, particles_by_region, outputfile);
 }
 
-/**
- * Only executed by slave processes.
- */
-void slave(char *specfile)
-{
-    int region_id = get_process_id();
-    int *sizes;
-    Particle **particles_by_region;
-
-    // Read the specification file into a struct (in parallel).
-    spec = read_spec_file(region_id, specfile);
-
-    // Initialize arrays and generate particles.
-    particles_by_region = init_particles(&sizes);
-
-    // Wait until all processes have generated particles.
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Run the simulation only in the region assigned.
-    particles_by_region = run_simulation(sizes, particles_by_region);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Collate particles and generate the heatmap on the master process.
-    collate_generate_heatmap(sizes, particles_by_region, NULL);
-}
-
 int main(int argc, char **argv)
 {
     multiproc_init(argc, argv);
     set_log_level_env();
-
-    // Initialize custom MPI datatypes.
     mpi_init_particle(&mpi_particle_type);
-
-    // Parse arguments.
     check_arguments(argc, argv, PROG);
-    char *specfile = argv[1];
-    char *outputfile = argv[2];
 
-    if (is_master()) LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), get_num_cores());
-
-    // Differentiate work on master vs slaves.
-    if (is_master())
-        master(specfile, outputfile);
-    else
-        slave(specfile);
+    start(argv[1], argv[2]);
 
     multiproc_finalize();
     return 0;
