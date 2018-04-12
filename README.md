@@ -75,7 +75,15 @@ Since the NSCC server does not have outbound Internet access, deployment and/or 
 rsync -r -a --exclude=".*/" -e ssh --delete . nscc:~/cs3211-project-2
 ```
 
-Replace `nscc` with the SSH username + hostname combination, or a SSH hostname alias. Alternatively, the `rsync.sh` file is provided for convenience.
+Replace `nscc` with the SSH username + hostname combination, or a SSH hostname alias. Alternatively, the `rsync.sh` file is provided for convenience, which will synchronise the source files to the server, as well as the output/log files back to the local directory.
+
+### Running on NSCC
+
+A sample PBS schedule file can be found at `submit.pbs`. To submit and run the job, you can use the given `qsub.sh` file:
+
+```sh
+./qsub.sh
+```
 
 ## License
 

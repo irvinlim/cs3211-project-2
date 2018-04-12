@@ -1,0 +1,37 @@
+#!/bin/bash
+
+## Specifies name of the job.
+#PBS -N cs3211p2_pool
+#PBS -P Personal
+
+## Specifies the resources to be reserved for the job.
+## - select: Number of nodes (up to 12)
+## - ncpus: Number of cores per server (up to 24)
+## - mem: Memory per core (up to 96G per server)
+## - mpiprocs: Number of MPI processes per server
+#PBS -l select=1:ncpus=4:mem=4G:mpiprocs=4:ompthreads=1
+
+## Wall time of 1 hour. Limit: 24 hours.
+#PBS -l walltime=01:00:00
+
+## Name of queue to submit job to.
+#PBS -q normal
+
+###
+
+module load openmpi/intel/1.10.2
+
+LOGFILE=logs/pool_`date '+%Y%m%d_%H%M%S'`.log
+SPECFILE=initialspec-nscc.txt
+OUTPUTFILE=output/finalbrd_`date '+%Y%m%d_%H%M%S'`.ppm
+
+cd $PBS_O_WORKDIR
+mkdir -p logs
+mkdir -p output
+
+echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." > "$LOGFILE"
+echo "==============================================" >> "$LOGFILE"
+echo "" >> "$LOGFILE"
+
+export LOG_LEVEL=4
+mpirun -np 4 pool "$SPECFILE" "$OUTPUTFILE" >> "$LOGFILE" 2>&1
