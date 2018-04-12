@@ -67,6 +67,16 @@ Some variants of the program are included, which are listed below. All of the bi
 * `pool`: Parallel version of the galactic pool simulator
 * `poolseq`: Sequential version of the galactic pool simulator
 
+## Deployment on NSCC
+
+Since the NSCC server does not have outbound Internet access, deployment and/or sync of the source files over Git is not possible. Instead, you can use `rsync` together with `ssh` to upload the files locally:
+
+```sh
+rsync -r -a --exclude=".*/" -e ssh --delete . nscc:~/cs3211-project-2
+```
+
+Replace `nscc` with the SSH username + hostname combination, or a SSH hostname alias. Alternatively, the `rsync.sh` file is provided for convenience.
+
 ## License
 
 Copyright, Irvin Lim
