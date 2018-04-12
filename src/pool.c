@@ -32,6 +32,10 @@
 // Stores the specifications for the program.
 Spec spec;
 
+// Store the computation and communication time for each iteration.
+long long *comm_time;
+long long *comp_time;
+
 // Custom MPI datatype to store our Particle struct.
 MPI_Datatype mpi_particle_type;
 
@@ -204,32 +208,60 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
  */
 Particle **run_simulation(int *sizes, Particle **particles_by_region)
 {
-    char time_passed[TIMEBUF_LENGTH];
+    long long start, end;
+    char timebuf[TIMEBUF_LENGTH];
     int region_id = get_process_id();
 
-    for (long i = 0; i < spec.TimeSlots; i++) {
-        // Start timer.
-        long long start = wall_clock_time();
+    // Initialise the timing arrays.
+    comm_time = malloc(spec.TimeSlots * sizeof(long long));
+    comp_time = malloc(spec.TimeSlots * sizeof(long long));
 
+    for (long i = 0; i < spec.TimeSlots; i++) {
         // Synchronise particles, such that we send all particles that we computed,
         // and receive updated particles for all regions.
+        start = wall_clock_time();
         particles_by_region = sync_particles(sizes, particles_by_region);
+        end = wall_clock_time();
+        comm_time[i] = end - start;
+        format_time(timebuf, TIMEBUF_LENGTH, end - start);
+        LL_VERBOSE("Communication time for iteration %4.0ld: %s seconds", i + 1, timebuf);
 
         // Execute time step.
+        start = wall_clock_time();
         particles_by_region = execute_time_step(sizes, particles_by_region);
+        end = wall_clock_time();
+        comp_time[i] = end - start;
+        format_time(timebuf, TIMEBUF_LENGTH, end - start);
+        LL_VERBOSE("Computation time for iteration %4.0ld: %s seconds", i + 1, timebuf);
 
-        // Wait for all processes to complete computation.
+        // Wait for all processes to complete computation before proceeding.
         MPI_Barrier(MPI_COMM_WORLD);
-
-        // Get timing and log.
-        long long end = wall_clock_time();
-        format_time(time_passed, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Region %d: Completed iteration %4.0ld in %s seconds", region_id, i + 1, time_passed);
     }
 
     // Synchronise particles one more time.
     particles_by_region = sync_particles(sizes, particles_by_region);
     MPI_Barrier(MPI_COMM_WORLD);
+
+    // Get total and average timing for all iterations.
+    long long comm_sum = 0;
+    long long comp_sum = 0;
+
+    for (int i = 0; i < spec.TimeSlots; i++) {
+        comm_sum += comm_time[i];
+        comp_sum += comp_time[i];
+    }
+
+    LL_VERBOSE("Computation time for region %d:", region_id);
+    format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
+    LL_VERBOSE("+ Total: %s seconds", timebuf);
+    format_time(timebuf, TIMEBUF_LENGTH, comp_sum / spec.TimeSlots);
+    LL_VERBOSE("+ Average: %s seconds", timebuf);
+
+    LL_VERBOSE("Communication time for region %d:", region_id);
+    format_time(timebuf, TIMEBUF_LENGTH, comm_sum);
+    LL_VERBOSE("+ Total: %s seconds", timebuf);
+    format_time(timebuf, TIMEBUF_LENGTH, comm_sum / spec.TimeSlots);
+    LL_VERBOSE("+ Average: %s seconds", timebuf);
 
     return particles_by_region;
 }
