@@ -42,7 +42,7 @@ typedef struct particle_t {
  */
 typedef struct spec_t {
     // Number of iterations to compute.
-    long TimeSlots;
+    int TimeSlots;
 
     // Unit time step for each iteration.
     long double TimeStep;

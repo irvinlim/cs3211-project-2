@@ -49,11 +49,11 @@ void run_simulation(Particle *particles)
         long long end = wall_clock_time();
         total_time += end - start;
         format_time(time_passed, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Completed iteration %4.0ld in %s seconds", i + 1, time_passed);
+        LL_VERBOSE("Completed iteration %4.0d in %s seconds", i + 1, time_passed);
     }
 
     // Get timing and log.
-    LL_NOTICE("Simulation of %ld iteration(s) completed.", spec.TimeSlots);
+    LL_NOTICE("Simulation of %d iteration(s) completed.", spec.TimeSlots);
 
     format_time(time_passed, TIMEBUF_LENGTH, total_time);
     LL_NOTICE("Total running time: %s seconds", time_passed);

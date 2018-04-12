@@ -28,7 +28,7 @@ Spec read_spec_file(int region_id, char *specfile)
     // Read specification lines.
     // Assumes that values are in fixed format.
     fscanf(fp,
-        "TimeSlots: %ld\n"
+        "TimeSlots: %d\n"
         "TimeStep: %Lf\n"
         "Horizon: %d\n"
         "GridSize: %d\n"
@@ -94,7 +94,7 @@ int get_pool_length()
 void print_spec(Spec spec)
 {
     LL_VERBOSE("%s: ", "Loaded specification");
-    LL_VERBOSE("- TimeSlots: %ld", spec.TimeSlots);
+    LL_VERBOSE("- TimeSlots: %d", spec.TimeSlots);
     LL_VERBOSE("- TimeStep: %Lf", spec.TimeStep);
     LL_VERBOSE("- Horizon: %d", spec.Horizon);
     LL_VERBOSE("- GridSize: %d", spec.GridSize);

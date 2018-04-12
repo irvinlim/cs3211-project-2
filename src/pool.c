@@ -32,9 +32,9 @@
 // Stores the specifications for the program.
 Spec spec;
 
-// Store the computation and communication time for each iteration.
-long long *comm_time;
-long long *comp_time;
+// Store the total computation and communication time for all iterations.
+long long comm_sum = 0;
+long long comp_sum = 0;
 
 // Custom MPI datatype to store our Particle struct.
 MPI_Datatype mpi_particle_type;
@@ -212,27 +212,23 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region)
     char timebuf[TIMEBUF_LENGTH];
     int region_id = get_process_id();
 
-    // Initialise the timing arrays.
-    comm_time = malloc(spec.TimeSlots * sizeof(long long));
-    comp_time = malloc(spec.TimeSlots * sizeof(long long));
-
-    for (long i = 0; i < spec.TimeSlots; i++) {
+    for (int i = 0; i < spec.TimeSlots; i++) {
         // Synchronise particles, such that we send all particles that we computed,
         // and receive updated particles for all regions.
         start = wall_clock_time();
         particles_by_region = sync_particles(sizes, particles_by_region);
         end = wall_clock_time();
-        comm_time[i] = end - start;
+        comm_sum += end - start;
         format_time(timebuf, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Communication time for iteration %4.0ld: %s seconds", i + 1, timebuf);
+        LL_VERBOSE("Communication time for iteration %4.0d: %s seconds", i + 1, timebuf);
 
         // Execute time step.
         start = wall_clock_time();
         particles_by_region = execute_time_step(sizes, particles_by_region);
         end = wall_clock_time();
-        comp_time[i] = end - start;
+        comp_sum += end - start;
         format_time(timebuf, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Computation time for iteration %4.0ld: %s seconds", i + 1, timebuf);
+        LL_VERBOSE("Computation time for iteration %4.0d: %s seconds", i + 1, timebuf);
 
         // Wait for all processes to complete computation before proceeding.
         MPI_Barrier(MPI_COMM_WORLD);
@@ -243,14 +239,6 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region)
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Get total and average timing for all iterations.
-    long long comm_sum = 0;
-    long long comp_sum = 0;
-
-    for (int i = 0; i < spec.TimeSlots; i++) {
-        comm_sum += comm_time[i];
-        comp_sum += comp_time[i];
-    }
-
     LL_VERBOSE("Computation time for region %d:", region_id);
     format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
     LL_VERBOSE("+ Total: %s seconds", timebuf);
@@ -272,7 +260,47 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region)
  */
 void collate_timings()
 {
-    // TODO
+    char timebuf[TIMEBUF_LENGTH];
+    long long all_comm_sum, all_comp_sum, all_comm_max, all_comp_max, all_comm_min, all_comp_min;
+
+    // Get the sum, max and min of the total communication and computation time for all processes.
+    MPI_Reduce(&comm_sum, &all_comm_sum, 1, MPI_LONG_LONG_INT, MPI_SUM, MASTER_ID, MPI_COMM_WORLD);
+    MPI_Reduce(&comm_sum, &all_comm_max, 1, MPI_LONG_LONG_INT, MPI_MAX, MASTER_ID, MPI_COMM_WORLD);
+    MPI_Reduce(&comm_sum, &all_comm_min, 1, MPI_LONG_LONG_INT, MPI_MIN, MASTER_ID, MPI_COMM_WORLD);
+    MPI_Reduce(&comp_sum, &all_comp_sum, 1, MPI_LONG_LONG_INT, MPI_SUM, MASTER_ID, MPI_COMM_WORLD);
+    MPI_Reduce(&comp_sum, &all_comp_max, 1, MPI_LONG_LONG_INT, MPI_MAX, MASTER_ID, MPI_COMM_WORLD);
+    MPI_Reduce(&comp_sum, &all_comp_min, 1, MPI_LONG_LONG_INT, MPI_MIN, MASTER_ID, MPI_COMM_WORLD);
+
+    // Print the report on the master process.
+    if (is_master()) {
+        LL_SUCCESS("%s", "============================");
+        LL_SUCCESS("%s", "    Pool Simulator Report   ");
+        LL_SUCCESS("%s", "============================");
+        LL_SUCCESS("Number of regions:    %d", get_num_cores());
+        LL_SUCCESS("Number of iterations: %d", spec.TimeSlots);
+        LL_SUCCESS("Number of particles:  %d", spec.TotalNumberOfParticles * get_num_cores());
+        LL_SUCCESS("%s", "============================");
+        LL_SUCCESS("%s", "Communication time:");
+        format_time(timebuf, TIMEBUF_LENGTH, all_comm_sum);
+        LL_SUCCESS("+ Sum: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comm_sum / spec.TimeSlots);
+        LL_SUCCESS("+ Avg: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comm_max);
+        LL_SUCCESS("+ Max: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comm_min);
+        LL_SUCCESS("+ Min: %s seconds", timebuf);
+        LL_SUCCESS("%s", "============================");
+        LL_SUCCESS("%s", "Computation time:");
+        format_time(timebuf, TIMEBUF_LENGTH, all_comp_sum);
+        LL_SUCCESS("+ Sum: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comp_sum / spec.TimeSlots);
+        LL_SUCCESS("+ Avg: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comp_max);
+        LL_SUCCESS("+ Max: %s seconds", timebuf);
+        format_time(timebuf, TIMEBUF_LENGTH, all_comp_min);
+        LL_SUCCESS("+ Min: %s seconds", timebuf);
+        LL_SUCCESS("%s", "============================");
+    }
 }
 
 /**
