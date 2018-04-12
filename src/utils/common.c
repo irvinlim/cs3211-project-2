@@ -13,8 +13,8 @@
  */
 void check_arguments(int argc, char **argv, char *prog)
 {
-    if (argc != 3) {
-        LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm", prog);
+    if (argc < 3) {
+        LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm [report.txt]", prog);
         exit(EXIT_FAILURE);
     }
 }

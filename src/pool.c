@@ -255,7 +255,7 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region)
  * Collates timings for all processes, calculates the average
  * and generates a report.
  */
-void collate_timings()
+void collate_timings(char *reportfile)
 {
     char timebuf[TIMEBUF_LENGTH];
     long long all_comm_sum, all_comp_sum, all_comm_max, all_comp_max, all_comm_min, all_comp_min;
@@ -297,6 +297,43 @@ void collate_timings()
         format_time(timebuf, TIMEBUF_LENGTH, all_comp_min);
         LL_SUCCESS("+ Min: %s seconds", timebuf);
         LL_SUCCESS("%s", "============================");
+
+        // Write the report to a file if filename was specified.
+        if (reportfile != NULL) {
+            FILE *fp = fopen(reportfile, "w");
+
+            fprintf(fp, "%s\n", "============================");
+            fprintf(fp, "%s\n", "    Pool Simulator Report   ");
+            fprintf(fp, "%s\n", "============================");
+            fprintf(fp, "Number of regions:    %d\n", get_num_cores());
+            fprintf(fp, "Number of iterations: %d\n", spec.TimeSlots);
+            fprintf(fp, "Number of particles:  %d\n", spec.TotalNumberOfParticles * get_num_cores());
+            fprintf(fp, "%s\n", "============================");
+            fprintf(fp, "%s\n", "Communication time:");
+            format_time(timebuf, TIMEBUF_LENGTH, all_comm_sum);
+            fprintf(fp, "+ Sum: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comm_sum / spec.TimeSlots);
+            fprintf(fp, "+ Avg: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comm_max);
+            fprintf(fp, "+ Max: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comm_min);
+            fprintf(fp, "+ Min: %s seconds\n", timebuf);
+            fprintf(fp, "%s\n", "============================");
+            fprintf(fp, "%s\n", "Computation time:");
+            format_time(timebuf, TIMEBUF_LENGTH, all_comp_sum);
+            fprintf(fp, "+ Sum: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comp_sum / spec.TimeSlots);
+            fprintf(fp, "+ Avg: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comp_max);
+            fprintf(fp, "+ Max: %s seconds\n", timebuf);
+            format_time(timebuf, TIMEBUF_LENGTH, all_comp_min);
+            fprintf(fp, "+ Min: %s seconds\n", timebuf);
+            fprintf(fp, "%s\n", "============================");
+
+            LL_SUCCESS("Pool simulator report was saved to %s.", reportfile);
+
+            fclose(fp);
+        }
     }
 }
 
@@ -358,7 +395,7 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 /**
  * Main method for the structue of the entire program.
  */
-void start(char *specfile, char *outputfile)
+void start(char *specfile, char *outputfile, char *reportfile)
 {
     int *sizes;
     Particle **particles_by_region;
@@ -384,7 +421,7 @@ void start(char *specfile, char *outputfile)
     if (is_master()) LL_NOTICE("%s", "Simulation completed!");
 
     // Collate timings from all processes to generate a report.
-    collate_timings();
+    collate_timings(reportfile);
 
     // Collate particles and generate the heatmap on the master process.
     collate_generate_heatmap(sizes, particles_by_region, outputfile);
@@ -395,9 +432,16 @@ int main(int argc, char **argv)
     multiproc_init(argc, argv);
     set_log_level_env();
     mpi_init_particle(&mpi_particle_type);
-    check_arguments(argc, argv, PROG);
 
-    start(argv[1], argv[2]);
+    // Parse arguments
+    check_arguments(argc, argv, PROG);
+    char *specfile = argv[1];
+    char *outputfile = argv[2];
+    char *reportfile = NULL;
+    if (argc == 4) reportfile = argv[3];
+
+    // Start the main method!
+    start(specfile, outputfile, reportfile);
 
     multiproc_finalize();
     return 0;
