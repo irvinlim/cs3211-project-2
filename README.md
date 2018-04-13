@@ -85,6 +85,54 @@ A sample PBS schedule file can be found at `submit.pbs`. To submit and run the j
 ./qsub.sh
 ```
 
+## Reports
+
+To save the collated timing report to a file, pass the third argument to `pool`, as follows:
+
+```sh
+mpirun -np 64 pool initialspec.txt finalbrd.ppm report.txt
+```
+
+## Animator
+
+To help debug as well as to visualise the alternate physics of the galactic pool table, you can write an output PPM file for every single frame by passing the fourth argument to `pool`, as follows:
+
+```sh
+mpirun -np 64 pool initialspec.txt finalbrd.ppm report.txt ./animator/frames
+```
+
+For a simulation of 100 time slots (as specified through `TimeSlots` in `initialspec.txt`), 100 PPM files will be generated in the `animator/frames` directory, from `0.ppm` to `99.ppm`.
+
+To visualise the simulation as an animation, a simple animator HTML page has been created under `animator/`, using [GPU.js](http://gpu.rocks/):
+
+![](docs/img/animator.png)
+
+Since AJAX calls are made, the HTML file (as well as the PPMs) have to be served over HTTP. You can start a simple HTTP server in Python or Node.js, as follows:
+
+For `http.server` (Python 3):
+
+```sh
+# Runs a static server on localhost:8000
+python -m http.server
+```
+
+For `SimpleHTTPServer` (Python 2):
+
+```sh
+# Runs a static server on localhost:8000
+python -m SimpleHTTPServer
+```
+
+Otherwise, for `http-server` (Node.js):
+
+```sh
+# Install http-server globally
+npm i -g http-server
+
+# Runs a static server on localhost:8080
+http-server
+```
+
 ## License
 
 Copyright, Irvin Lim
