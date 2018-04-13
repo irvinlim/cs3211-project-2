@@ -133,6 +133,7 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
 
         Particle p0 = particles_by_region[region_id][i];
         LL_DEBUG("Computing force on particle %d with dt = %0.6Lf:", i + 1, dt);
+        LL_DEBUG2("  mass            = %0.9Lf", p0.mass);
         LL_DEBUG("+ p0(x, y)        = (%0.9Lf, %0.9Lf)", p0.x, p0.y);
         LL_DEBUG("  denorm_p0(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p0.x, region_id, spec), denorm_region_y(p0.y, region_id, spec));
 
@@ -144,6 +145,7 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
 
                 Particle p1 = particles_by_region[region][j];
                 LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("    mass            = %0.9Lf", p1.mass);
                 LL_DEBUG2("    p1(x, y)        = (%0.9Lf, %0.9Lf)", p1.x, p1.y);
                 LL_DEBUG2("    denorm_p1(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p1.x, region, spec), denorm_region_y(p1.y, region, spec));
 
