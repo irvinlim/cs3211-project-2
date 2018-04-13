@@ -3,7 +3,7 @@ LDIR=$(IDIR)/utils
 SDIR=$(IDIR)/simulation
 
 CC=mpicc
-CFLAGS=-Wall -Wextra -std=gnu99
+CFLAGS=-lm -Wall -Wextra -std=gnu99
 
 LLIBS=common env heatmap log multiproc particles regions spec timer
 SLIBS=nbody
