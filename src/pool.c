@@ -37,9 +37,6 @@ long long comp_sum = 0;
 // Custom MPI datatype to store our Particle struct.
 MPI_Datatype mpi_particle_type;
 
-// Store setting whether debugging of frames should be enabled.
-unsigned char debug_frames = 0;
-
 /**
  * Initialize arrays of particles and generate the initial particles
  * to be located entirely in the region ID corresponding to the current process ID.
@@ -205,57 +202,6 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
 }
 
 /**
- * Runs the simulation according to the provided specifications.
- */
-Particle **run_simulation(int *sizes, Particle **particles_by_region)
-{
-    long long start, end;
-    char timebuf[TIMEBUF_LENGTH];
-    int region_id = get_process_id();
-
-    for (int i = 0; i < spec.TimeSlots; i++) {
-        // Synchronise particles, such that we send all particles that we computed,
-        // and receive updated particles for all regions.
-        start = wall_clock_time();
-        particles_by_region = sync_particles(sizes, particles_by_region);
-        end = wall_clock_time();
-        comm_sum += end - start;
-        format_time(timebuf, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Communication time for iteration %4.0d: %s seconds", i + 1, timebuf);
-
-        // Execute time step.
-        start = wall_clock_time();
-        particles_by_region = execute_time_step(sizes, particles_by_region);
-        end = wall_clock_time();
-        comp_sum += end - start;
-        format_time(timebuf, TIMEBUF_LENGTH, end - start);
-        LL_VERBOSE("Computation time for iteration %4.0d: %s seconds", i + 1, timebuf);
-
-        // Wait for all processes to complete computation before proceeding.
-        MPI_Barrier(MPI_COMM_WORLD);
-    }
-
-    // Synchronise particles one more time.
-    particles_by_region = sync_particles(sizes, particles_by_region);
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // Get total and average timing for all iterations.
-    LL_VERBOSE("Computation time for region %d:", region_id);
-    format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
-    LL_VERBOSE("+ Total: %s seconds", timebuf);
-    format_time(timebuf, TIMEBUF_LENGTH, comp_sum / spec.TimeSlots);
-    LL_VERBOSE("+ Average: %s seconds", timebuf);
-
-    LL_VERBOSE("Communication time for region %d:", region_id);
-    format_time(timebuf, TIMEBUF_LENGTH, comm_sum);
-    LL_VERBOSE("+ Total: %s seconds", timebuf);
-    format_time(timebuf, TIMEBUF_LENGTH, comm_sum / spec.TimeSlots);
-    LL_VERBOSE("+ Average: %s seconds", timebuf);
-
-    return particles_by_region;
-}
-
-/**
  * Collates timings for all processes, calculates the average
  * and generates a report.
  */
@@ -397,9 +343,70 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 }
 
 /**
+ * Runs the simulation according to the provided specifications.
+ */
+Particle **run_simulation(int *sizes, Particle **particles_by_region, char *framesdir)
+{
+    long long start, end;
+    char timebuf[TIMEBUF_LENGTH];
+    int region_id = get_process_id();
+
+    for (int i = 0; i < spec.TimeSlots; i++) {
+        // Synchronise particles, such that we send all particles that we computed,
+        // and receive updated particles for all regions.
+        start = wall_clock_time();
+        particles_by_region = sync_particles(sizes, particles_by_region);
+        end = wall_clock_time();
+        comm_sum += end - start;
+        format_time(timebuf, TIMEBUF_LENGTH, end - start);
+        LL_VERBOSE("Communication time for iteration %4.0d: %s seconds", i + 1, timebuf);
+
+        // Execute time step.
+        start = wall_clock_time();
+        particles_by_region = execute_time_step(sizes, particles_by_region);
+        end = wall_clock_time();
+        comp_sum += end - start;
+        format_time(timebuf, TIMEBUF_LENGTH, end - start);
+        LL_VERBOSE("Computation time for iteration %4.0d: %s seconds", i + 1, timebuf);
+
+        // Wait for all processes to complete computation before proceeding.
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        // If debugging of frames is enabled, write to the output directory.
+        if (framesdir != NULL) {
+            int outputdir_len = strlen(framesdir);
+            char *outputfile = malloc(outputdir_len + 20);
+            sprintf(outputfile, "%s/%d.ppm", framesdir, i);
+            FILE *fp = fopen(outputfile, "w");
+            if (fp == NULL) LL_ERROR("Could not open %s for debug output for frames!", outputfile);
+            collate_generate_heatmap(sizes, particles_by_region, outputfile);
+        }
+    }
+
+    // Synchronise particles one more time.
+    particles_by_region = sync_particles(sizes, particles_by_region);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Get total and average timing for all iterations.
+    LL_VERBOSE("Computation time for region %d:", region_id);
+    format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
+    LL_VERBOSE("+ Total: %s seconds", timebuf);
+    format_time(timebuf, TIMEBUF_LENGTH, comp_sum / spec.TimeSlots);
+    LL_VERBOSE("+ Average: %s seconds", timebuf);
+
+    LL_VERBOSE("Communication time for region %d:", region_id);
+    format_time(timebuf, TIMEBUF_LENGTH, comm_sum);
+    LL_VERBOSE("+ Total: %s seconds", timebuf);
+    format_time(timebuf, TIMEBUF_LENGTH, comm_sum / spec.TimeSlots);
+    LL_VERBOSE("+ Average: %s seconds", timebuf);
+
+    return particles_by_region;
+}
+
+/**
  * Main method for the structue of the entire program.
  */
-void start(char *specfile, char *outputfile, char *reportfile)
+void start(char *specfile, char *outputfile, char *reportfile, char *framesdir)
 {
     int *sizes;
     Particle **particles_by_region;
@@ -420,7 +427,7 @@ void start(char *specfile, char *outputfile, char *reportfile)
 
     // Run the simulation only in the region assigned.
     if (is_master()) LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
-    particles_by_region = run_simulation(sizes, particles_by_region);
+    particles_by_region = run_simulation(sizes, particles_by_region, framesdir);
     MPI_Barrier(MPI_COMM_WORLD);
     if (is_master()) LL_NOTICE("%s", "Simulation completed!");
 
@@ -435,7 +442,6 @@ int main(int argc, char **argv)
 {
     multiproc_init(argc, argv);
     set_log_level_env();
-    debug_frames = getenv_debug_frames();
     mpi_init_particle(&mpi_particle_type);
 
     // Parse arguments
@@ -444,9 +450,11 @@ int main(int argc, char **argv)
     char *outputfile = argv[2];
     char *reportfile = NULL;
     if (argc == 4) reportfile = argv[3];
+    char *framesdir = NULL;
+    if (argc == 5) framesdir = argv[4];
 
     // Start the main method!
-    start(specfile, outputfile, reportfile);
+    start(specfile, outputfile, reportfile, framesdir);
 
     multiproc_finalize();
     return 0;

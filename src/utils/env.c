@@ -21,12 +21,3 @@ int getenv_log_process()
 
     return -1;
 }
-
-unsigned char getenv_debug_frames()
-{
-    char *env = getenv("DEBUG_FRAMES");
-    if (env != NULL && env[0] >= '0' && env[0] <= '1')
-        return (char)atoi(env);
-
-    return 0;
-}
