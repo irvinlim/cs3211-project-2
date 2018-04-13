@@ -377,8 +377,13 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region, char *fram
             int outputdir_len = strlen(framesdir);
             char *outputfile = malloc(outputdir_len + 20);
             sprintf(outputfile, "%s/%d.ppm", framesdir, i);
+
             FILE *fp = fopen(outputfile, "w");
-            if (fp == NULL) LL_ERROR("Could not open %s for debug output for frames!", outputfile);
+            if (fp == NULL) {
+                LL_ERROR("Could not open %s for debug output for frames!", outputfile);
+                exit(EXIT_FAILURE);
+            }
+
             collate_generate_heatmap(sizes, particles_by_region, outputfile);
         }
     }
