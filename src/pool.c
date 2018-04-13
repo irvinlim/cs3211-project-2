@@ -343,6 +343,26 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 }
 
 /**
+ * Generates a debug frame and saves it to the frames directory.
+ * Since each process is in charge of generating the frame for the particles in its region only,
+ * all particles must be in the correct process according to their region, prior to calling this method.
+ */
+void generate_debug_frame(int frame_id, int *sizes, Particle **particles, char *framesdir)
+{
+    int outputdir_len = strlen(framesdir);
+    char *outputfile = malloc(outputdir_len + 20);
+    sprintf(outputfile, "%s/%d.ppm", framesdir, frame_id);
+
+    FILE *fp = fopen(outputfile, "w");
+    if (fp == NULL) {
+        LL_ERROR("Could not open %s for writing debug frame to!", outputfile);
+        exit(EXIT_FAILURE);
+    }
+
+    collate_generate_heatmap(sizes, particles, outputfile);
+}
+
+/**
  * Runs the simulation according to the provided specifications.
  */
 Particle **run_simulation(int *sizes, Particle **particles_by_region, char *framesdir)
@@ -361,6 +381,9 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region, char *fram
         format_time(timebuf, TIMEBUF_LENGTH, end - start);
         LL_VERBOSE("Communication time for iteration %4.0d: %s seconds", i + 1, timebuf);
 
+        // If debugging of frames is enabled, generate a frame and save it to the frames directory.
+        if (framesdir != NULL) generate_debug_frame(i, sizes, particles_by_region, framesdir);
+
         // Execute time step.
         start = wall_clock_time();
         particles_by_region = execute_time_step(sizes, particles_by_region);
@@ -371,21 +394,6 @@ Particle **run_simulation(int *sizes, Particle **particles_by_region, char *fram
 
         // Wait for all processes to complete computation before proceeding.
         MPI_Barrier(MPI_COMM_WORLD);
-
-        // If debugging of frames is enabled, write to the output directory.
-        if (framesdir != NULL) {
-            int outputdir_len = strlen(framesdir);
-            char *outputfile = malloc(outputdir_len + 20);
-            sprintf(outputfile, "%s/%d.ppm", framesdir, i);
-
-            FILE *fp = fopen(outputfile, "w");
-            if (fp == NULL) {
-                LL_ERROR("Could not open %s for debug output for frames!", outputfile);
-                exit(EXIT_FAILURE);
-            }
-
-            collate_generate_heatmap(sizes, particles_by_region, outputfile);
-        }
     }
 
     // Synchronise particles one more time.
