@@ -11,7 +11,7 @@
 /**
  * Checks whether the number of arguments are satisfied.
  */
-void check_arguments(int argc, char **argv, char *prog)
+void check_arguments(int argc, char *prog)
 {
     if (argc < 3) {
         LL("Usage: mpirun -np processors %s specfile.txt outputfile.ppm [report.txt]", prog);

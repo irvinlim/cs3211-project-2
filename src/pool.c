@@ -14,6 +14,7 @@
 
 #include "simulation/nbody.h"
 #include "utils/common.h"
+#include "utils/env.h"
 #include "utils/heatmap.h"
 #include "utils/log.h"
 #include "utils/multiproc.h"
@@ -35,6 +36,9 @@ long long comp_sum = 0;
 
 // Custom MPI datatype to store our Particle struct.
 MPI_Datatype mpi_particle_type;
+
+// Store setting whether debugging of frames should be enabled.
+unsigned char debug_frames = 0;
 
 /**
  * Initialize arrays of particles and generate the initial particles
@@ -431,10 +435,11 @@ int main(int argc, char **argv)
 {
     multiproc_init(argc, argv);
     set_log_level_env();
+    debug_frames = getenv_debug_frames();
     mpi_init_particle(&mpi_particle_type);
 
     // Parse arguments
-    check_arguments(argc, argv, PROG);
+    check_arguments(argc, PROG);
     char *specfile = argv[1];
     char *outputfile = argv[2];
     char *reportfile = NULL;

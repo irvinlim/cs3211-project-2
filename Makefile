@@ -5,11 +5,14 @@ SDIR=$(IDIR)/simulation
 CC=mpicc
 CFLAGS=-Wall -Wextra -std=gnu99
 
-DEPS=$(LDIR)/common.h $(LDIR)/multiproc.h $(LDIR)/spec.h $(LDIR)/particles.h $(LDIR)/log.h $(LDIR)/timer.h $(LDIR)/heatmap.h $(LDIR)/regions.h $(SDIR)/nbody.h
-LIBS=$(LDIR)/common.o $(LDIR)/multiproc.o $(LDIR)/spec.o $(LDIR)/particles.o $(LDIR)/log.o $(LDIR)/timer.o $(LDIR)/heatmap.o $(LDIR)/regions.o $(SDIR)/nbody.o
+LLIBS=common env heatmap log multiproc particles regions spec timer
+SLIBS=nbody
 
-POOL_OBJS=$(IDIR)/pool.c $(LIBS)
-POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LIBS)
+LLIBS_O = $(addsuffix .o, $(addprefix $(LDIR)/, $(LLIBS)))
+SLIBS_O = $(addsuffix .o, $(addprefix $(SDIR)/, $(SLIBS)))
+
+POOL_OBJS=$(IDIR)/pool.c $(LLIBS_O) $(SLIBS_O)
+POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LLIBS_O) $(SLIBS_O)
 
 .DEFAULT_GOAL := all
 .PHONY: clean
@@ -18,7 +21,7 @@ POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LIBS)
 ALL=pool
 all: $(ALL)
 
-%.o: %.c $(DEPS)
+%.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 pool: $(POOL_OBJS)

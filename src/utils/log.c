@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include "env.h"
 #include "log.h"
 
 // Define the log level here.
@@ -36,18 +37,8 @@ const char *log_level_colors[] = {
 
 const char color_end[] = "\033[0m";
 
-// The log level can be overwritten by the LOG_LEVEL environment variable.
 void set_log_level_env()
 {
-    char *env;
-
-    // Parse LOG_LEVEL var.
-    env = getenv("LOG_LEVEL");
-    if (env != NULL && env[0] >= '0' && env[0] <= '9')
-        log_level = (char)atoi(env);
-
-    // Parse LOG_PROCESS var.
-    env = getenv("LOG_PROCESS");
-    if (env != NULL && env[0] >= '0' && env[0] <= '9')
-        log_process = (char)atoi(env);
+    log_level = getenv_log_level();
+    log_process = getenv_log_process();
 }

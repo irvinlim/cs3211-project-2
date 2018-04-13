@@ -4,7 +4,7 @@
 /**
  * Checks whether the number of arguments are satisfied.
  */
-void check_arguments(int argc, char **argv, char *prog);
+void check_arguments(int argc, char *prog);
 
 /**
  * Joins an array of integers into a string.
