@@ -105,7 +105,7 @@ For a simulation of 100 time slots (as specified through `TimeSlots` in `initial
 
 To visualise the simulation as an animation, a simple animator HTML page has been created under `animator/`, using [GPU.js](http://gpu.rocks/):
 
-![](docs/img/animator.png)
+![Screenshot of animator](docs/img/animator.png)
 
 Since AJAX calls are made, the HTML file (as well as the PPMs) have to be served over HTTP. You can start a simple HTTP server in Python or Node.js, as follows:
 
