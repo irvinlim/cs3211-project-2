@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CS3211 Project 2: Galactic Pool Table - Animator</title>
+    <link rel="stylesheet" href="css/bulma.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+    <section class="hero is-small is-dark is-bold">
+        <div class="hero-body container">
+            <h1 class="title">
+                CS3211 Project 2: Galactic Pool Table - Animator
+            </h1>
+            <h2 class="subtitle">
+                Submitted by Irvin Lim (A0139812A)
+            </h2>
+        </div>
+    </section>
+
+    <main>
+        <section class="container">
+            <div class="notification">
+                <strong>How to use the Animator</strong>
+                <p>
+                    Run the simulator with the debug frames output directory argument, which will write PPMs for each frame to the directory:
+                </p>
+                <pre>mpirun -np 4 pool initialspec.txt finalbrd.ppm report.txt ./debugframes</pre>
+            </div>
+        </section>
+
+        <form action="javascript:void(0);">
+            <section class="controls-container container">
+                <div class="columns">
+                    <div class="column field">
+                        <label class="label">Frames Directory</label>
+                        <div class="control">
+                            <input class="input" type="text" id="input-framesdir" value="../debugframes">
+                        </div>
+                    </div>
+                    <div class="column field">
+                        <label class="label">Regions</label>
+                        <div class="control">
+                            <input class="input" type="text" id="input-regions" value="4">
+                        </div>
+                    </div>
+                    <div class="column field">
+                        <label class="label">Grid Size</label>
+                        <div class="control">
+                            <input class="input" type="text" id="input-gridsize" value="200">
+                        </div>
+                    </div>
+                    <div class="column field">
+                        <label class="label">Time Slots</label>
+                        <div class="control">
+                            <input class="input" type="text" id="input-timeslots" value="100">
+                        </div>
+                    </div>
+                    <div class="column field">
+                        <label class="label">Frame Rate</label>
+                        <div class="control">
+                            <input class="input" type="text" id="input-framerate" value="10">
+                        </div>
+                    </div>
+                    <div class="column field">
+                        <label class="label">&nbsp;</label>
+                        <div class="columns">
+                            <div class="column has-text-centered">
+                                <button type="submit" class="button is-fullwidth is-success" id="btn-start">Start</button>
+                            </div>
+                            <div class="column has-text-centered">
+                                <button class="button is-fullwidth is-danger" id="btn-stop">Stop</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+
+        <section class="loading-container container" style="display: none">
+            <div class="notification">
+                Loading all PPMs via AJAX...
+            </div>
+        </section>
+
+        <section class="canvas-container container" style="display: none">
+        </section>
+    </main>
+
+    <script src="js/gpu.min.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>

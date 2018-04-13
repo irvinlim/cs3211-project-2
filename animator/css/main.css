@@ -1,0 +1,11 @@
+main {
+    padding: 20px;
+}
+
+main .container {
+    margin: 0 auto 20px;
+}
+
+.canvas-container {
+    text-align: center;
+}
