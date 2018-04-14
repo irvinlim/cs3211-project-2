@@ -241,3 +241,50 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
         }
     }
 }
+
+/**
+ * Handle collisions against the walls of the pool area.
+ */
+void handle_wall_collisions(Spec spec, int size, Particle *particles, int region_id)
+{
+    for (int i = 0; i < size; i++) {
+        Particle p = particles[i];
+
+        Vector pos = { .x = denorm_region_x(p.x, region_id, spec), .y = denorm_region_y(p.y, region_id, spec) };
+        LL_DEBUG("Handling wall collisions for particle %d:", i + 1);
+        LL_DEBUG2("  (x, y)     = (%0.9Lf, %0.9Lf)", pos.x, pos.y);
+
+        long double dist_top = pos.y;
+        long double dist_bot = spec.PoolLength * spec.GridSize - pos.y;
+        long double dist_lft = pos.x;
+        long double dist_rgt = spec.PoolLength * spec.GridSize - pos.x;
+
+        // Handle top wall collisions.
+        if (dist_top < p.radius) {
+            LL_DEBUG2("  + Collision with top wall: p.y += %0.9Lf", p.radius - dist_top);
+            particles[i].y += p.radius - dist_top;
+            particles[i].vy *= -1;
+        }
+
+        // Handle bottom wall collisions.
+        if (dist_bot < p.radius) {
+            LL_DEBUG2("  + Collision with bottom wall: p.y -= %0.9Lf", p.radius - dist_bot);
+            particles[i].y -= p.radius - dist_bot;
+            particles[i].vy *= -1;
+        }
+
+        // Handle left wall collisions.
+        if (dist_lft < p.radius) {
+            LL_DEBUG2("  + Collision with left wall: p.x += %0.9Lf", p.radius - dist_lft);
+            particles[i].x += p.radius - dist_lft;
+            particles[i].vx *= -1;
+        }
+
+        // Handle right wall collisions.
+        if (dist_rgt < p.radius) {
+            LL_DEBUG2("  + Collision with right wall: p.x -= %0.9Lf", p.radius - dist_rgt);
+            particles[i].x -= p.radius - dist_rgt;
+            particles[i].vx *= -1;
+        }
+    }
+}

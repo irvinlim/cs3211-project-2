@@ -49,3 +49,19 @@ Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Par
  * @param region_id             The region whose particles' velocities should be updated.
  */
 void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id);
+
+/**
+ * Handle collisions against the walls of the pool area.
+ * 
+ * Assumes that the mass of the walls >> the mass of the particles,
+ * which means that the velocity of the wall does not change 
+ * (i.e. the wall velocity remains at zero).
+ * 
+ * In this case, we don't need to do elastic collision, we can just
+ * invert the respective velocities.
+ * 
+ * @param spec          The program specification.
+ * @param size          Size of the array.
+ * @param particles     Array of particles whose velocities should be updated.
+ */
+void handle_wall_collisions(Spec spec, int size, Particle *particles);

@@ -197,6 +197,9 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
     // Handle collisions for all particles, updating the velocity (direction) if necessary.
     handle_collisions(spec, sizes, particles_by_region, num_cores, region_id);
 
+    // Handle collisions of particles against the walls of the pool.
+    handle_wall_collisions(spec, sizes[region_id], particles_by_region[region_id]);
+
     // Update the position and region of all particles, for the particles in the region
     // that this process is computing for.
     Particle **updated_particles = update_position_and_region(dt, spec, sizes, particles_by_region, num_cores, region_id);
