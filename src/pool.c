@@ -192,11 +192,14 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
 
     // Compute the new velocities for all particles in the region that this process is computing for,
     // taking particles in other regions as part of the computation.
-    update_velocity(dt, spec, num_cores, particles_by_region, sizes, region_id);
+    update_velocity(dt, spec, sizes, particles_by_region, num_cores, region_id);
+
+    // Handle collisions for all particles, updating the velocity (direction) if necessary.
+    handle_collisions(spec, sizes, particles_by_region, num_cores, region_id);
 
     // Update the position and region of all particles, for the particles in the region
     // that this process is computing for.
-    Particle **updated_particles = update_position_and_region(dt, spec, num_cores, particles_by_region, sizes, region_id);
+    Particle **updated_particles = update_position_and_region(dt, spec, sizes, particles_by_region, num_cores, region_id);
 
     return updated_particles;
 }

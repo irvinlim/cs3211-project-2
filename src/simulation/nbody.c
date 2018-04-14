@@ -9,23 +9,14 @@
 #include "../utils/particles.h"
 #include "../utils/regions.h"
 #include "../utils/types.h"
+#include "../utils/vector.h"
 
 #define SOFTENING_CONSTANT 10E-9F
 
 /**
  * Updates the position and region of a particle for a given timestep.
- * 
- * @param dt                    The time step value.
- * @param spec                  The program specification.
- * @param num_regions           The number of regions.
- * @param particles_by_region   2-D array of particles, indexed by region ID.
- * @param sizes                 Sizes of each array in particles_by_region.
- * @param region_id             The region whose particles' positions should be updated.
- *                              Particles in all other regions will be discarded!
- *                              The updated particles will be placed in their respective regions after return.
- * @return                      Returns a new array of particles.
  */
-Particle **update_position_and_region(long double dt, Spec spec, int num_regions, Particle **particles_by_region, int *sizes, int region_id)
+Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id)
 {
     // First we store the number of particles that we had computed (and wish to update positions for).
     int n = sizes[region_id];
@@ -115,17 +106,8 @@ Particle **update_position_and_region(long double dt, Spec spec, int num_regions
  * compute the resultant velocity.
  * 
  * This method uses Newton's law of universal gravitation.
- * 
- * @param dt                    The time step value.
- * @param spec                  The program specification.
- * @param num_regions           The number of regions.
- * @param particles_by_region   2-D array of particles, indexed by region ID.
- * @param sizes                 Sizes of each array in particles_by_region.
- * @param region_id             The region whose particles' velocities should be updated.
- *                              Particles in all other regions passed in through particles_by_region 
- *                              will be used in the computation of the resultant velocity.
  */
-void update_velocity(long double dt, Spec spec, int num_regions, Particle **particles_by_region, int *sizes, int region_id)
+void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id)
 {
     // Iterate through all particles in the given region.
     for (int i = 0; i < sizes[region_id]; i++) {
@@ -178,5 +160,84 @@ void update_velocity(long double dt, Spec spec, int num_regions, Particle **part
             && !isnan(particles_by_region[region_id][i].vy)
             && isfinite(particles_by_region[region_id][i].vx)
             && isfinite(particles_by_region[region_id][i].vy));
+    }
+}
+
+/**
+ * Updates the velocities of any particles in this process' region
+ * if it is colliding with any other particle.
+ */
+void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id)
+{
+    // Iterate each particle in the region.
+    for (int i = 0; i < sizes[region_id]; i++) {
+        Particle p1 = particles_by_region[region_id][i];
+
+        Vector pos1 = { .x = denorm_region_x(p1.x, region_id, spec), .y = denorm_region_y(p1.y, region_id, spec) };
+        Vector vel1 = { .x = p1.vx, .y = p1.vy };
+        LL_DEBUG("Handling collisions for particle %d:", i + 1);
+        LL_DEBUG2("  (x, y)     = (%0.9Lf, %0.9Lf)", pos1.x, pos1.y);
+        LL_DEBUG2("  m, r       = (%0.9Lf, %0.9Lf)", p1.mass, p1.radius);
+
+        // Check for collisions against all other particles in every region.
+        for (int region = 0; region < num_regions; region++) {
+            for (int j = 0; j < sizes[region]; j++) {
+                // Don't collide with yourself; don't double-count
+                // collisions of two particles in the same region.
+                // Only smaller-indexed particles should handle collisions with
+                // larger-indexed particles; both sides will be updated.
+                if (region == region_id && i >= j) continue;
+
+                Particle p2 = particles_by_region[region][j];
+
+                Vector pos2 = { .x = denorm_region_x(p2.x, region, spec), .y = denorm_region_y(p2.y, region, spec) };
+                Vector vel2 = { .x = p2.vx, .y = p2.vy };
+                LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("    (x, y)   = (%0.9Lf, %0.9Lf)", pos2.x, pos2.y);
+                LL_DEBUG2("    m, r     = (%0.9Lf, %0.9Lf)", p2.mass, p2.radius);
+
+                Vector vel_diff = vec_sub(vel1, vel2);
+                Vector pos_diff = vec_sub(pos1, pos2);
+                long double dist = vec_len(pos_diff);
+                long double distSq = dist * dist;
+                long double r_sum = p1.radius + p2.radius;
+
+                LL_DEBUG2("    dist     = %0.9Lf", dist);
+                LL_DEBUG2("    r1 + r2  = %0.9Lf", r_sum);
+
+                // Check if particles are collided.
+                if (dist > r_sum) continue;
+                LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, i + 1, region, j + 1);
+
+                // Move the particles backwards till the point that they are just touching each other.
+                long double back_len = (r_sum - dist) / 2;
+                Vector b1 = vec_mul_scalar(-back_len, vec_normalize(vel1));
+                Vector b2 = vec_mul_scalar(-back_len, vec_normalize(vel2));
+                LL_DEBUG2("      back   = %0.9Lf", back_len);
+                LL_DEBUG2("      b1     = (%0.9Lf, %0.9Lf)", b1.x, b1.y);
+                LL_DEBUG2("      b2     = (%0.9Lf, %0.9Lf)", b2.x, b2.y);
+
+                particles_by_region[region_id][i].x += b1.x;
+                particles_by_region[region_id][i].y += b1.y;
+                particles_by_region[region][j].x += b2.x;
+                particles_by_region[region][j].y += b2.y;
+
+                // Update the velocities for p1, assuming perfectly elastic collision.
+                long double mass_term1 = (2 * p2.mass) / (p1.mass + p2.mass);
+                long double dot_term1 = vec_dot(vel_diff, pos_diff) / distSq;
+                Vector sub_v1 = vec_mul_scalar(mass_term1 * dot_term1, pos_diff);
+                particles_by_region[region_id][i].vx -= sub_v1.x;
+                particles_by_region[region_id][i].vy -= sub_v1.y;
+                LL_DEBUG2("      v1     - (%0.9Lf, %0.9Lf) = (%0.9Lf, %0.9Lf)", sub_v1.x, sub_v1.y, p1.vx - sub_v1.x, p1.vy - sub_v1.y);
+
+                // Do the same for p2.
+                long double mass_term2 = (2 * p1.mass) / (p1.mass + p2.mass);
+                long double dot_term2 = vec_dot(vec_sub(vel2, vel1), vec_sub(pos2, pos1)) / distSq;
+                Vector sub_v2 = vec_mul_scalar(mass_term2 * dot_term2, vec_sub(pos2, pos1));
+                particles_by_region[region][j].vx -= sub_v2.x;
+                particles_by_region[region][j].vy -= sub_v2.y;
+                LL_DEBUG2("      v2     - (%0.9Lf, %0.9Lf) = (%0.9Lf, %0.9Lf)", sub_v2.x, sub_v2.y, p2.vx - sub_v2.x, p2.vy - sub_v2.y);
+            }
+        }
     }
 }
