@@ -47,6 +47,7 @@ function start() {
 
     // Stop kernel first if it is running.
     if (interval) clearInterval(interval);
+    frame = 0;
 
     // Set up kernel and canvas.
     initializeGpujs(regions, gridsize);
