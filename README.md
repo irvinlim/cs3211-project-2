@@ -8,7 +8,7 @@ The complete project report can also be found in the root directory.
 
 ## Installation
 
-This project uses OpenMPI, and is known to work on at least version 3.0.1. You can download the OpenMPI library from [here](https://www.open-mpi.org/software/ompi/v3.0/).
+This project uses OpenMPI, and is known to work on OpenMPI 1.10.2 and OpenMPI 3.0.1. You can download the OpenMPI library from [here](https://www.open-mpi.org/software/ompi/v3.0/).
 
 To build the program, a Makefile is included. Run `make` as such:
 
@@ -30,6 +30,13 @@ See `initialspec-example.txt` for an example of how the specification file shoul
 Change the value of the `np` flag to specify the number of regions that should be simulated. For the sequential version, only the master process will be working, while the parallel version will split the work up amongst all processes.
 
 As such, the value of `np` **must be a perfect square**, e.g. 1, 4, 9, 16, 25, etc., since the "pool table" is a square.
+
+### Variants
+
+Some variants of the program are included, which are listed below. All of the binaries take in the same command-line arguments as described above.
+
+* `pool`: Parallel version of the galactic pool simulator
+* `poolseq`: Sequential version of the galactic pool simulator
 
 ### Verbosity
 
@@ -60,13 +67,6 @@ To help with this, you can limit the logging process to only a certain process s
 ```sh
 LOG_LEVEL=6 LOG_PROCESS=0 mpirun -np 4 pool initialspec.txt finalbrd.ppm
 ```
-
-### Variants
-
-Some variants of the program are included, which are listed below. All of the binaries take in the same command-line arguments as described above.
-
-* `pool`: Parallel version of the galactic pool simulator
-* `poolseq`: Sequential version of the galactic pool simulator
 
 ## Deployment on NSCC
 
