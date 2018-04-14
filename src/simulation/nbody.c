@@ -27,35 +27,46 @@ Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Par
 
     // Update the positions of particles in the specified region and tabulate the size.
     for (int i = 0; i < n; i++) {
+        Particle p = particles_by_region[region_id][i];
+
         LL_DEBUG("+ Particle %6.0d: ", i + 1);
         // Denormalize the position wrt region first.
-        particles_by_region[region_id][i].x = denorm_region_x(particles_by_region[region_id][i].x, region_id, spec);
-        particles_by_region[region_id][i].y = denorm_region_y(particles_by_region[region_id][i].y, region_id, spec);
+        particles_by_region[region_id][i].x = denorm_region_x(p.x, region_id, spec);
+        particles_by_region[region_id][i].y = denorm_region_y(p.y, region_id, spec);
+        p = particles_by_region[region_id][i];
 
         // Compute the new position.
-        particles_by_region[region_id][i].x += dt * particles_by_region[region_id][i].vx;
-        particles_by_region[region_id][i].y += dt * particles_by_region[region_id][i].vy;
+        particles_by_region[region_id][i].x += dt * p.vx;
+        particles_by_region[region_id][i].y += dt * p.vy;
+        p = particles_by_region[region_id][i];
 
         // Wrap the particle around all regions if necessary.
-        particles_by_region[region_id][i].x = wrap_around(particles_by_region[region_id][i].x, spec.GridSize * spec.PoolLength);
-        particles_by_region[region_id][i].y = wrap_around(particles_by_region[region_id][i].y, spec.GridSize * spec.PoolLength);
+        particles_by_region[region_id][i].x = wrap_around(p.x, spec.GridSize * spec.PoolLength);
+        particles_by_region[region_id][i].y = wrap_around(p.y, spec.GridSize * spec.PoolLength);
+        p = particles_by_region[region_id][i];
 
         // Calculate the region of the new position.
-        int region = get_denorm_particle_region(particles_by_region[region_id][i], spec);
+        int region = get_denorm_particle_region(p, spec);
         LL_DEBUG("  Region = %d", region);
         sizes[region]++;
 
         // Update the region field here, so that we can sort it later.
         particles_by_region[region_id][i].region = region;
+        p = particles_by_region[region_id][i];
 
         // Re-normalize the position wrt region.
-        particles_by_region[region_id][i].x = norm_region(particles_by_region[region_id][i].x, spec);
-        particles_by_region[region_id][i].y = norm_region(particles_by_region[region_id][i].y, spec);
+        particles_by_region[region_id][i].x = norm_region(p.x, spec);
+        particles_by_region[region_id][i].y = norm_region(p.y, spec);
+        p = particles_by_region[region_id][i];
 
-        Particle p = particles_by_region[region_id][i];
         LL_DEBUG2("  Velocity   = (%0.9Lf, %0.9Lf), Displacement = (%0.9Lf, %0.9Lf)", p.vx, p.vy, dt * p.vx, dt * p.vy);
         LL_DEBUG("  New (x, y) = (%0.9Lf, %0.9Lf)", p.x, p.y);
-        assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
+
+        // Perform assertions to aid debugging.
+        if (isnan(p.x) || isnan(p.y) || !isfinite(p.x) || !isfinite(p.y)) {
+            LL_ERROR("Assertion failed: (x,y) = (%0.9Lf, %0.9Lf); (vx, vy) = (%0.9Lf, %0.9Lf)", p.x, p.y, p.vx, p.vy);
+            assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
+        }
     }
 
     // Debug print the final sizes.
@@ -209,6 +220,15 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 if (dist > r_sum) continue;
                 LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, i + 1, region, j + 1);
 
+                // Handle the case when the particles overlap, AND their direction vectors are equal.
+                // Add an arbitrary constant to both x and y velocities so that they are different.
+                if (vec_len(pos_diff) == 0 && vec_len(vel_diff) == 0) {
+                    vel1 = (Vector){ .x = p1.vx - SOFTENING_CONSTANT, .y = p1.vy + SOFTENING_CONSTANT };
+                    vel2 = (Vector){ .x = p2.vx + SOFTENING_CONSTANT, .y = p2.vy - SOFTENING_CONSTANT };
+                    LL_DEBUG2("      Overlap! Adding arbitrary constant to p1.vel = (%0.9Lf, %0.9Lf); p2.vel = (%0.9Lf, %0.9Lf)", vel1.x, vel1.y, vel2.x, vel2.y);
+                    vel_diff = vec_sub(vel1, vel2);
+                }
+
                 // Move the particles backwards till the point that they are just touching each other.
                 long double back_len = (r_sum - dist) / 2;
                 Vector b1 = vec_mul_scalar(-back_len, vec_normalize(vel1));
@@ -221,6 +241,15 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 particles_by_region[region_id][i].y += b1.y;
                 particles_by_region[region][j].x += b2.x;
                 particles_by_region[region][j].y += b2.y;
+
+                // Recalculate positions and distance since it may have been updated.
+                p1 = particles_by_region[region_id][i];
+                p2 = particles_by_region[region][j];
+                pos1 = (Vector){ .x = denorm_region_x(p1.x, region_id, spec), .y = denorm_region_y(p1.y, region_id, spec) };
+                pos2 = (Vector){ .x = denorm_region_x(p2.x, region, spec), .y = denorm_region_y(p2.y, region, spec) };
+                pos_diff = vec_sub(pos1, pos2);
+                dist = vec_len(pos_diff);
+                distSq = dist * dist;
 
                 // Update the velocities for p1, assuming perfectly elastic collision.
                 long double mass_term1 = (2 * p2.mass) / (p1.mass + p2.mass);
@@ -237,6 +266,24 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 particles_by_region[region][j].vx -= sub_v2.x;
                 particles_by_region[region][j].vy -= sub_v2.y;
                 LL_DEBUG2("      v2     - (%0.9Lf, %0.9Lf) = (%0.9Lf, %0.9Lf)", sub_v2.x, sub_v2.y, p2.vx - sub_v2.x, p2.vy - sub_v2.y);
+
+                p1 = particles_by_region[region_id][i];
+                p2 = particles_by_region[region][j];
+
+                // Perform assertions to aid debugging.
+                if (isnan(p1.x) || isnan(p1.y) || !isfinite(p1.x) || !isfinite(p1.y)
+                    || isnan(p2.x) || isnan(p2.y) || !isfinite(p2.x) || !isfinite(p2.y)
+                    || isnan(p1.vx) || isnan(p1.vy) || !isfinite(p1.vx) || !isfinite(p1.vy)
+                    || isnan(p2.vx) || isnan(p2.vy) || !isfinite(p2.vx) || !isfinite(p2.vy)) {
+                    LL_ERROR("%s", "Assertion failed in handle_collisions.");
+                    LL_ERROR("p1: (x,y) = (%0.9Lf, %0.9Lf); (vx, vy) = (%0.9Lf, %0.9Lf)", p1.x, p1.y, p1.vx, p1.vy);
+                    LL_ERROR("p2: (x,y) = (%0.9Lf, %0.9Lf); (vx, vy) = (%0.9Lf, %0.9Lf)", p2.x, p2.y, p2.vx, p2.vy);
+
+                    assert(!isnan(p1.x) && !isnan(p1.y) && isfinite(p1.x) && isfinite(p1.y));
+                    assert(!isnan(p2.x) && !isnan(p2.y) && isfinite(p2.x) && isfinite(p2.y));
+                    assert(!isnan(p1.vx) && !isnan(p1.vy) && isfinite(p1.vx) && isfinite(p1.vy));
+                    assert(!isnan(p2.vx) && !isnan(p2.vy) && isfinite(p2.vx) && isfinite(p2.vy));
+                }
             }
         }
     }
@@ -286,5 +333,10 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
             particles[i].x -= p.radius - dist_rgt;
             particles[i].vx *= -1;
         }
+
+        // Perform assertions to aid debugging.
+        p = particles[i];
+        assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
+        assert(!isnan(p.vx) && !isnan(p.vy) && isfinite(p.vx) && isfinite(p.vy));
     }
 }
