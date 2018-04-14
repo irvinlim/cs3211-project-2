@@ -96,7 +96,7 @@ function loadImages(callback) {
             // Update progress bar.
             const percentLoaded = Math.round(loaded / timeslots * 100);
             $('progress').innerHTML = `${percentLoaded}%`;
-            document.querySelector('progress').value = percentLoaded;
+            $('progress').value = percentLoaded;
 
             // Call the callback once completed.
             if (loaded >= timeslots) {
