@@ -31,6 +31,10 @@ Change the value of the `np` flag to specify the number of regions that should b
 
 As such, the value of `np` **must be a perfect square**, e.g. 1, 4, 9, 16, 25, etc., since the "pool table" is a square.
 
+### Specification
+
+See the `samplespec` folder for some sample specification files to be used with this program, which demonstrate various features of the program.
+
 ### Variants
 
 Some variants of the program are included, which are listed below. All of the binaries take in the same command-line arguments as described above.
