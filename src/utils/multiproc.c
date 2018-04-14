@@ -117,9 +117,9 @@ int is_master()
  */
 int mpi_send(const void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
-    LL_DEBUG2("Sending %d items to process %d...", count, dest);
+    LL_MPI2("Sending %d items to process %d...", count, dest);
     int error = MPI_Send(buf, count, datatype, dest, tag, comm);
-    LL_DEBUG2("Sent %d items to process %d!", count, dest);
+    LL_MPI2("Sent %d items to process %d!", count, dest);
 
     return error;
 }
@@ -129,9 +129,9 @@ int mpi_send(const void *buf, int count, MPI_Datatype datatype, int dest, int ta
  */
 int mpi_recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
-    LL_DEBUG2("Receiving %d items from process %d...", count, source);
+    LL_MPI2("Receiving %d items from process %d...", count, source);
     int error = MPI_Recv(buf, count, datatype, source, tag, comm, status);
-    LL_DEBUG2("Received %d items from process %d!", count, source);
+    LL_MPI2("Received %d items from process %d!", count, source);
 
     return error;
 }

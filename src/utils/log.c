@@ -21,6 +21,7 @@ const char *log_level_labels[] = {
     "",
     "",
     "",
+    "",
 };
 
 // Log level colors.
@@ -33,6 +34,7 @@ const char *log_level_colors[] = {
     "\033[0;35m",
     "\033[0;36m",
     "\033[0;36m",
+    "\033[0;35m",
 };
 
 const char color_end[] = "\033[0m";

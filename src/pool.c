@@ -111,7 +111,7 @@ Particle **sync_particles(int *sizes, Particle **particles)
 
                 // First send the size of the subarray we are going to send.
                 mpi_send(&sizes[dest], 1, MPI_INT, dest, 0, MPI_COMM_WORLD);
-                LL_MPI("About to send %d particles to process %d.", sizes[dest], dest);
+                LL_MPI2("About to send %d particles to process %d.", sizes[dest], dest);
 
                 // Now we can send the array of particles that __belongs to the process' region__.
                 mpi_send(particles[dest], sizes[dest], mpi_particle_type, dest, 0, MPI_COMM_WORLD);
@@ -122,7 +122,7 @@ Particle **sync_particles(int *sizes, Particle **particles)
             // First receive the size of the subarray we are going to receive.
             int subarray_recv_size;
             mpi_recv(&subarray_recv_size, 1, MPI_INT, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            LL_MPI("About to receive %d particles from process %d.", subarray_recv_size, region);
+            LL_MPI2("About to receive %d particles from process %d.", subarray_recv_size, region);
 
             // Receive the particles from the other process that __belongs to my process' region__.
             mpi_recv(&final_particles[my_region][receive_offset], subarray_recv_size, mpi_particle_type, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -156,10 +156,10 @@ Particle **sync_particles(int *sizes, Particle **particles)
 
             // Send the particles.
             if (sender == my_region) {
-                LL_MPI("Sending %d particles to %d", sizes[my_region], receiver);
+                LL_MPI2("Sending %d particles to %d", sizes[my_region], receiver);
                 mpi_send(final_particles[my_region], sizes[my_region], mpi_particle_type, receiver, 0, MPI_COMM_WORLD);
             } else if (receiver == my_region) {
-                LL_MPI("Receiving %d particles from %d", total_sizes[my_region], sender);
+                LL_MPI2("Receiving %d particles from %d", total_sizes[my_region], sender);
                 mpi_recv(final_particles[sender], total_sizes[sender], mpi_particle_type, sender, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
 
