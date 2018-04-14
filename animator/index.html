@@ -21,12 +21,30 @@
 
     <main>
         <section class="container">
-            <div class="notification">
+            <div class="notification content">
+                <button class="delete" onclick="javascript:this.parentNode.style.display = 'none'"></button>
                 <strong>How to use the Animator</strong>
                 <p>
                     Run the simulator with the debug frames output directory argument, which will write PPMs for each frame to the directory:
                 </p>
                 <pre>mpirun -np 4 pool initialspec.txt finalbrd.ppm report.txt ./animator/frames</pre>
+                <p>
+                    The
+                    <em>Frames Path</em> option allows you to specify a relative path to this page's location, where
+                    <code>*.ppm</code> files will be loaded via AJAX. Examples:
+
+                    <ul>
+                        <li>
+                            <code>frames</code>
+                        </li>
+                        <li>
+                            <code>frames/collisiontest</code>
+                        </li>
+                        <li>
+                            <code>http://localhost:8080/customlocation/frames</code>
+                        </li>
+                    </ul>
+                </p>
             </div>
         </section>
 
@@ -58,7 +76,7 @@
                         </div>
                     </div>
                     <div class="column field">
-                        <label class="label">Frame Rate</label>
+                        <label class="label">FPS</label>
                         <div class="control">
                             <input class="input" type="text" id="input-framerate" value="60">
                         </div>
