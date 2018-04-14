@@ -74,5 +74,6 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
  * @param spec          The program specification.
  * @param size          Size of the array.
  * @param particles     Array of particles whose velocities should be updated.
+ * @param region_id     The region that the particles reside in.
  */
-void handle_wall_collisions(Spec spec, int size, Particle *particles);
+void handle_wall_collisions(Spec spec, int size, Particle *particles, int region_id);
