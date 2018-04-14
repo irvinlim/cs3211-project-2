@@ -200,9 +200,12 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
     // Handle collisions of particles against the walls of the pool.
     handle_wall_collisions(spec, sizes[region_id], particles_by_region[region_id]);
 
-    // Update the position and region of all particles, for the particles in the region
-    // that this process is computing for.
-    Particle **updated_particles = update_position_and_region(dt, spec, sizes, particles_by_region, num_cores, region_id);
+    // Update the position for all particles in the region that this process is computing for.
+    update_position(dt, spec, sizes[region_id], particles_by_region[region_id], region_id);
+
+    // Reallocate the particles in their correct regions in the 2-D array.
+    Particle **updated_particles = reallocate_for_region(spec, sizes, sizes[region_id], particles_by_region[region_id], num_cores);
+    deallocate_particles(particles_by_region, num_cores);
 
     return updated_particles;
 }

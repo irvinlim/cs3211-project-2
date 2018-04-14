@@ -13,51 +13,42 @@
 
 #define SOFTENING_CONSTANT 10E-9F
 
-/**
- * Updates the position and region of a particle for a given timestep.
- */
-Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id)
+void update_position(long double dt, Spec spec, int size, Particle *particles, int region_id)
 {
-    // First we store the number of particles that we had computed (and wish to update positions for).
-    int n = sizes[region_id];
-    LL_DEBUG("Updating positions and regions of %d particles in region %d:", n, region_id);
+    LL_DEBUG("Updating positions of %d particles in region %d:", size, region_id);
 
-    // Truncate the sizes of all regions first.
-    for (int i = 0; i < num_regions; i++) sizes[i] = 0;
-
-    // Update the positions of particles in the specified region and tabulate the size.
-    for (int i = 0; i < n; i++) {
-        Particle p = particles_by_region[region_id][i];
+    // Update the positions of particles in the specified region.
+    for (int i = 0; i < size; i++) {
+        Particle p = particles[i];
 
         LL_DEBUG("+ Particle %6.0d: ", i + 1);
         // Denormalize the position wrt region first.
-        particles_by_region[region_id][i].x = denorm_region_x(p.x, region_id, spec);
-        particles_by_region[region_id][i].y = denorm_region_y(p.y, region_id, spec);
-        p = particles_by_region[region_id][i];
+        particles[i].x = denorm_region_x(p.x, region_id, spec);
+        particles[i].y = denorm_region_y(p.y, region_id, spec);
+        p = particles[i];
 
         // Compute the new position.
-        particles_by_region[region_id][i].x += dt * p.vx;
-        particles_by_region[region_id][i].y += dt * p.vy;
-        p = particles_by_region[region_id][i];
+        particles[i].x += dt * p.vx;
+        particles[i].y += dt * p.vy;
+        p = particles[i];
 
         // Wrap the particle around all regions if necessary.
-        particles_by_region[region_id][i].x = wrap_around(p.x, spec.GridSize * spec.PoolLength);
-        particles_by_region[region_id][i].y = wrap_around(p.y, spec.GridSize * spec.PoolLength);
-        p = particles_by_region[region_id][i];
+        particles[i].x = wrap_around(p.x, spec.GridSize * spec.PoolLength);
+        particles[i].y = wrap_around(p.y, spec.GridSize * spec.PoolLength);
+        p = particles[i];
 
         // Calculate the region of the new position.
         int region = get_denorm_particle_region(p, spec);
         LL_DEBUG("  Region = %d", region);
-        sizes[region]++;
 
         // Update the region field here, so that we can sort it later.
-        particles_by_region[region_id][i].region = region;
-        p = particles_by_region[region_id][i];
+        particles[i].region = region;
+        p = particles[i];
 
         // Re-normalize the position wrt region.
-        particles_by_region[region_id][i].x = norm_region(p.x, spec);
-        particles_by_region[region_id][i].y = norm_region(p.y, spec);
-        p = particles_by_region[region_id][i];
+        particles[i].x = norm_region(p.x, spec);
+        particles[i].y = norm_region(p.y, spec);
+        p = particles[i];
 
         LL_DEBUG2("  Velocity   = (%0.9Lf, %0.9Lf), Displacement = (%0.9Lf, %0.9Lf)", p.vx, p.vy, dt * p.vx, dt * p.vy);
         LL_DEBUG("  New (x, y) = (%0.9Lf, %0.9Lf)", p.x, p.y);
@@ -68,6 +59,15 @@ Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Par
             assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
         }
     }
+}
+
+Particle **reallocate_for_region(Spec spec, int *sizes, int num_particles, Particle *particles, int num_regions)
+{
+    // Truncate the sizes of all regions first.
+    for (int i = 0; i < num_regions; i++) sizes[i] = 0;
+
+    // Compute the number of particles in their resultant regions.
+    for (int i = 0; i < num_particles; i++) sizes[particles[i].region]++;
 
     // Debug print the final sizes.
     print_ints(LOG_LEVEL_DEBUG2, "Resultant sizes after updating positions", num_regions, sizes);
@@ -82,15 +82,15 @@ Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Par
 
     // Copy the particles into the new array.
     LL_DEBUG2("%s", "Separating particles from original 2-D array into their own regions...");
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < num_particles; i++) {
         // Extract region from region field that we populated earlier.
-        int region = particles_by_region[region_id][i].region;
+        int region = particles[i].region;
 
         // Append the particle into the array.
-        memcpy(&new_particles[region][counters[region]], &particles_by_region[region_id][i], sizeof(Particle));
+        memcpy(&new_particles[region][counters[region]], &particles[i], sizeof(Particle));
 
         // Increment the counter.
-        counters[region] += 1;
+        counters[region]++;
         assert(counters[region] > 0 && counters[region] <= spec.TotalNumberOfParticles * num_regions);
     }
 
@@ -106,7 +106,6 @@ Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Par
 
     // Free buffers.
     free(counters);
-    deallocate_particles(particles_by_region, num_regions);
 
     return new_particles;
 }

@@ -17,19 +17,30 @@
 void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id);
 
 /**
- * Updates the position and region of a particle for a given timestep.
+ * Updates the position of particles for a given timestep.
  * 
- * @param dt                    The time step value.
+ * @param dt            The time step value.
+ * @param spec          The program specification.
+ * @param size          Size of the particles array.
+ * @param particles     Array of particles to update.
+ * @param region_id     The region that these particles reside in.
+ */
+void update_position(long double dt, Spec spec, int size, Particle *particles, int region_id);
+
+/**
+ * Reallocates the particles for a given region into a 2-D array of 
+ * particles indexed by their regions.
+ * 
+ * Note that the array passed to sizes will be modified in-place.
+ * 
  * @param spec                  The program specification.
- * @param sizes                 Sizes of each array in particles_by_region.
- * @param particles_by_region   2-D array of particles, indexed by region ID.
+ * @param sizes                 Resultant sizes of each region.
+ * @param num_particles         The number of particles which are to be reallocated.
+ * @param particles             The particles to reallocate.
  * @param num_regions           The number of regions.
- * @param region_id             The region whose particles' positions should be updated.
- *                              Particles in all other regions will be discarded!
- *                              The updated particles will be placed in their respective regions after return.
  * @return                      Returns a new array of particles.
  */
-Particle **update_position_and_region(long double dt, Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id);
+Particle **reallocate_for_region(Spec spec, int *sizes, int num_particles, Particle *particles, int num_regions);
 
 /**
  * Updates the velocities of any particles in this process' region
