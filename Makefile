@@ -17,8 +17,7 @@ POOLSEQ_OBJS=$(IDIR)/poolseq.c $(LLIBS_O) $(SLIBS_O)
 .DEFAULT_GOAL := all
 .PHONY: clean
 
-# TEMP: Disable poolseq first, WIP
-ALL=pool
+ALL=pool poolseq
 all: $(ALL)
 
 %.o: %.c
