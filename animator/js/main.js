@@ -6,6 +6,7 @@ let frame = 0;
 let interval;
 let images = [];
 let framesdir, regions, gridsize, timeslots, framerate;
+let isLoading = false;
 
 const $ = selector => document.querySelector(selector);
 
@@ -75,6 +76,10 @@ function loadImages(callback) {
     images = [];
     let loaded = 0;
 
+    // Reset progress bar.
+    $('progress').innerHTML = '0%';
+    document.querySelector('progress').value = 0;
+
     for (let i = 0; i < timeslots; i++) {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `${framesdir}/${i}.ppm`, true);
@@ -86,7 +91,18 @@ function loadImages(callback) {
             const imagedata = lines.slice(4, lines.length - 1).map(x => parseInt(x));
             images[i] = imagedata;
 
-            if (++loaded >= timeslots) callback();
+            loaded++;
+
+            // Update progress bar.
+            const percentLoaded = Math.round(loaded / timeslots * 100);
+            $('progress').innerHTML = `${percentLoaded}%`;
+            document.querySelector('progress').value = percentLoaded;
+
+            // Call the callback once completed.
+            if (loaded >= timeslots) {
+                isLoading = false;
+                callback();
+            }
         };
 
         xhr.send();
@@ -105,5 +121,15 @@ function stop() {
     if (interval) clearInterval(interval);
 }
 
-$('#btn-start').addEventListener('click', start);
+function formHandler(e) {
+    e.preventDefault();
+
+    // Prevent double loading.
+    if (isLoading) return;
+
+    isLoading = true;
+    start();
+}
+
+$('form').addEventListener('submit', formHandler);
 $('#btn-stop').addEventListener('click', stop);
