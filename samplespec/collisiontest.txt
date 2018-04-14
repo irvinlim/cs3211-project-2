@@ -1,12 +1,12 @@
 TimeSlots: 100
-TimeStep: 2.5
-Horizon: 1
+TimeStep: 3
+Horizon: 0
 GridSize: 200
 NumberOfSmallParticles: 0
 SmallParticleMass: 0.0001
 SmallParticleRadius: 0.0001
 NumberOfLargeParticles: 4
-8 4 16 16
-8 4 184 16
-12 6 24 176
-6 3 188 188
+8 4 50 50
+8 4 50 100
+12 6 150 115
+6 3 150 135
