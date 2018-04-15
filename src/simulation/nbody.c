@@ -11,7 +11,7 @@
 #include "../utils/types.h"
 #include "../utils/vector.h"
 
-#define SOFTENING_CONSTANT 10E-9F
+#define SOFTENING_PARAM 0.0001F
 
 void update_position(long double dt, Spec spec, int size, Particle *particles, int region_id)
 {
@@ -143,7 +143,7 @@ void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles
 
                 long double dx = denorm_region_x(p1.x, region, spec) - denorm_region_x(p0.x, region_id, spec);
                 long double dy = denorm_region_y(p1.y, region, spec) - denorm_region_y(p0.y, region_id, spec);
-                long double dist2 = dx * dx + dy * dy + SOFTENING_CONSTANT;
+                long double dist2 = dx * dx + dy * dy + SOFTENING_PARAM * SOFTENING_PARAM;
                 long double dist = sqrtl(dist2);
                 long double f = (p1.mass * p0.mass) / dist2;
 
@@ -224,8 +224,8 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 // Handle the case when the particles overlap, AND their unit vectors are equal.
                 // Add an arbitrary constant to both x and y velocities so that they are different.
                 if (vec_len(pos_diff) == 0 && vec_normalize(vel1).x == vec_normalize(vel2).x && vec_normalize(vel1).y == vec_normalize(vel2).y) {
-                    vel1 = (Vector){ .x = p1.vx - SOFTENING_CONSTANT, .y = p1.vy + SOFTENING_CONSTANT };
-                    vel2 = (Vector){ .x = p2.vx + SOFTENING_CONSTANT, .y = p2.vy - SOFTENING_CONSTANT };
+                    vel1 = (Vector){ .x = p1.vx - SOFTENING_PARAM, .y = p1.vy + SOFTENING_PARAM };
+                    vel2 = (Vector){ .x = p2.vx + SOFTENING_PARAM, .y = p2.vy - SOFTENING_PARAM };
                     LL_DEBUG2("      Overlap! Adding arbitrary constant to p1.vel = (%0.9Lf, %0.9Lf); p2.vel = (%0.9Lf, %0.9Lf)", vel1.x, vel1.y, vel2.x, vel2.y);
                     vel_diff = vec_sub(vel1, vel2);
                 }
