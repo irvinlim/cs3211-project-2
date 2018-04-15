@@ -109,7 +109,7 @@ void print_particle(LogLevel level, Particle particle)
 void print_particle_ids(LogLevel level, char *msg, int n, Particle *particles)
 {
     // Don't do anything if log_level is lesser than level (optimisation).
-    if (level < log_level) return;
+    if (level > log_level) return;
 
     // Map all IDs from Particles to print.
     int *ids = malloc(n * sizeof(int));
