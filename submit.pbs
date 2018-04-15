@@ -24,24 +24,28 @@ module load openmpi/intel/1.10.2
 # Specify the program parameters here.
 
 PROG=pool
-NUM_PROCS=4
+NUM_PROCS=1
 LOG_LEVEL=4
 
 ###########
 
 # Prepare output files and directories.
 
-DATE=`date '+%Y%m%d_%H%M%S'`
-SPECFILE=initialspec-nscc.txt
-LOGFILE="logs/pool_$DATE.log"
-OUTPUTFILE="output/finalbrd_$DATE.ppm"
-REPORTFILE="report/report_$DATE.txt"
-FRAMESDIR="frames/$DATE"
-
 cd $PBS_O_WORKDIR
-mkdir -p logs
-mkdir -p output
+DATE=`date '+%Y%m%d_%H%M%S'`
+DATADIR="data/nscc/$PROG/$DATE"
+mkdir -p "$DATADIR"
+
+SPECFILE=samplespec/overlaptest.txt
+cp "$SPECFILE" "$DATADIR/spec.txt"
+SPECFILE="$DATADIR/spec.txt"
+
+LOGFILE="$DATADIR/$PROG.log"
+OUTPUTFILE="$DATADIR/finalbrd.ppm"
+REPORTFILE="$DATADIR/report.txt"
+FRAMESDIR="$DATADIR/frames"
 mkdir -p "$FRAMESDIR"
+
 echo > "$LOGFILE"
 
 ###########
@@ -54,11 +58,12 @@ echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." >> "$LOGFILE"
 echo "==============================================" >> "$LOGFILE"
 echo "" >> "$LOGFILE"
 
-echo "Executing command: " mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" "$FRAMESDIR" >> "$LOGFILE"
+COMMAND=mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" "$FRAMESDIR"
+echo Executing command: "$COMMAND" >> "$LOGFILE"
 echo "LOG_LEVEL=$LOG_LEVEL" >> "$LOGFILE"
 echo >> "$LOGFILE"
 
-mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" >> "$LOGFILE" 2>&1
+$COMMAND >> "$LOGFILE" 2>&1
 
 echo "" >> "$LOGFILE"
 echo "==============================================" >> "$LOGFILE"

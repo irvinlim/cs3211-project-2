@@ -37,9 +37,7 @@
 
 # Output files
 *.ppm
-report/
-output/
-logs/
+data/
 
 # Spec file
 initialspec.txt
