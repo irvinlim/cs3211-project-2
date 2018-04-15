@@ -5,6 +5,7 @@ let kernel;
 let frame = 0;
 let timeout;
 let images = [];
+let imagemeta = [];
 let framesdir, regions, gridsize, timeslots, framerate;
 let isLoading = false;
 
@@ -14,17 +15,16 @@ function initializeGpujs(regions, gridsize) {
     const length = Math.floor(Math.sqrt(regions)) * gridsize;
 
     kernel = gpu.createKernel(
-        function(imageData) {
-            var y = 3 * (this.constants.length - this.thread.y - 1) * this.constants.length;
+        function(imageData, size, bitmapMax) {
+            var y = 3 * (size - this.thread.y - 1) * size;
             var x = 3 * this.thread.x;
-            var r = imageData[x + y + 0] / 256;
-            var g = imageData[x + y + 1] / 256;
-            var b = imageData[x + y + 2] / 256;
+            var r = imageData[x + y + 0] / bitmapMax;
+            var g = imageData[x + y + 1] / bitmapMax;
+            var b = imageData[x + y + 2] / bitmapMax;
             this.color(r, g, b, 1);
         },
         {
             graphical: true,
-            constants: { length },
             output: [length, length]
         }
     );
@@ -67,7 +67,7 @@ function start() {
         animate();
 
         function animate() {
-            nextFrame(images[frame++]);
+            nextFrame(images[frame++], imagemeta[0], imagemeta[2]);
             frame %= timeslots;
 
             timeout = setTimeout(animate, 1000 / framerate);
@@ -93,9 +93,9 @@ function loadImages(callback) {
         xhr.onload = function(e) {
             if (xhr.readyState !== xhr.DONE || xhr.status !== 200) return;
 
-            const lines = xhr.responseText.split(/[\n ]/);
-            const imagedata = lines.slice(4, lines.length - 1).map(x => parseInt(x));
-            images[i] = imagedata;
+            const values = xhr.responseText.split(/[\n ]/);
+            imagemeta = values.slice(1, 4).map(x => parseInt(x));
+            images[i] = values.slice(4, values.length - 1).map(x => parseInt(x));
 
             loaded++;
 
@@ -115,8 +115,8 @@ function loadImages(callback) {
     }
 }
 
-function nextFrame(imageData) {
-    kernel(imageData);
+function nextFrame(imageData, size, bitmapMax) {
+    kernel(imageData, size, bitmapMax);
 
     const canvas = kernel.getCanvas();
     canvas.width = gridsize * Math.sqrt(regions);
