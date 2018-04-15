@@ -36,10 +36,12 @@ SPECFILE=initialspec-nscc.txt
 LOGFILE="logs/pool_$DATE.log"
 OUTPUTFILE="output/finalbrd_$DATE.ppm"
 REPORTFILE="report/report_$DATE.txt"
+FRAMESDIR="frames/$DATE"
 
 cd $PBS_O_WORKDIR
 mkdir -p logs
 mkdir -p output
+mkdir -p "$FRAMESDIR"
 echo > "$LOGFILE"
 
 ###########
