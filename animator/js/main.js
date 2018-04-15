@@ -83,9 +83,12 @@ function loadImages(callback) {
     $('progress').innerHTML = '0%';
     document.querySelector('progress').value = 0;
 
+    // Prevent cached XHRs by appending current timestamp to request.
+    const date = new Date().getTime();
+
     for (let i = 0; i < timeslots; i++) {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', `${framesdir}/${i}.ppm`, true);
+        xhr.open('GET', `${framesdir}/${i}.ppm?r=${date}`, true);
 
         xhr.onload = function(e) {
             if (xhr.readyState !== xhr.DONE || xhr.status !== 200) return;
