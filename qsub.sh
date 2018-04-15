@@ -1,5 +1,7 @@
 #!/bin/sh
 
+module load openmpi/intel/1.10.2
+
 echo "Making project..."
 make clean
 make
