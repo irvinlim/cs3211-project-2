@@ -3,7 +3,7 @@
 const gpu = new GPU();
 let kernel;
 let frame = 0;
-let interval;
+let timeout;
 let images = [];
 let framesdir, regions, gridsize, timeslots, framerate;
 let isLoading = false;
@@ -47,7 +47,7 @@ function start() {
     console.log('TimeSlots:', timeslots);
 
     // Stop kernel first if it is running.
-    if (interval) clearInterval(interval);
+    if (timeout) clearTimeout(timeout);
     frame = 0;
 
     // Set up kernel and canvas.
@@ -62,13 +62,16 @@ function start() {
         $('.loading-container').style.display = 'none';
         $('.canvas-container').style.display = 'block';
 
-        console.log(`Animating at ${framerate} fps.`);
-
         // Start the animation.
-        interval = setInterval(function() {
+        console.log(`Animating at ${framerate} fps.`);
+        animate();
+
+        function animate() {
             nextFrame(images[frame++]);
             frame %= timeslots;
-        }, 1000 / framerate);
+
+            timeout = setTimeout(animate, 1000 / framerate);
+        }
     });
 }
 
@@ -118,7 +121,7 @@ function nextFrame(imageData) {
 }
 
 function stop() {
-    if (interval) clearInterval(interval);
+    if (timeout) clearTimeout(timeout);
 }
 
 function formHandler(e) {
@@ -131,5 +134,10 @@ function formHandler(e) {
     start();
 }
 
+function updateFrameRate() {
+    framerate = parseInt($('#input-framerate').value);
+}
+
 $('form').addEventListener('submit', formHandler);
 $('#btn-stop').addEventListener('click', stop);
+$('#input-framerate').addEventListener('change', updateFrameRate);
