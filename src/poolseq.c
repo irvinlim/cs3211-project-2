@@ -34,26 +34,6 @@ Spec spec;
 long long comp_sum = 0;
 
 /**
- * Initialize arrays of particles and generate the initial particles for all regions.
- */
-Particle **init_particles(int **sizes)
-{
-    int num_cores = get_num_cores();
-
-    // Allocate space for particles and their array sizes.
-    Particle **particles_by_region = allocate_particles(*sizes, num_cores);
-    *sizes = (int *)calloc(num_cores, sizeof(int));
-
-    // Generate particles for each region.
-    for (int region_id = 0; region_id < num_cores; region_id++) {
-        particles_by_region[region_id] = generate_particles(region_id, spec);
-        (*sizes)[region_id] = spec.TotalNumberOfParticles;
-    }
-
-    return particles_by_region;
-}
-
-/**
  * Generates canvases for each region so that we can generate a PPM heatmap.
  */
 void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *outputfile)
@@ -230,20 +210,26 @@ void collate_timings(char *reportfile)
  */
 void start(char *specfile, char *outputfile, char *reportfile, char *framesdir)
 {
-    int *sizes;
-    Particle **particles_by_region;
+    int num_cores = get_num_cores();
 
     LL_NOTICE("Starting %s with %d region(s) on %d processor(s)...", PROG, get_num_cores(), get_num_cores());
 
-    // Read the specification file into a struct (in parallel).
-    spec = read_spec_file(0, specfile);
+    // Allocate space for particles and their array sizes.
+    int *sizes = calloc(num_cores, sizeof(int));
+    Particle **particles_by_region = allocate_particles(sizes, num_cores);
+
+    for (int i = 0; i < num_cores; i++) {
+        // Read the specification file, which will generate large particles.
+        spec = read_spec_file(i, specfile);
+
+        // Generate particles for this region.
+        particles_by_region[i] = generate_particles(i, spec);
+        sizes[i] = spec.TotalNumberOfParticles;
+    }
 
     // Debug print all read-in values.
     print_spec(spec);
     print_canvas_info(spec);
-
-    // Initialize arrays and generate particles.
-    particles_by_region = init_particles(&sizes);
 
     // Run the simulation only in the region assigned.
     LL_NOTICE("Simulation is starting on %d core(s).", get_num_cores());
