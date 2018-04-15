@@ -105,6 +105,10 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
     for (int i = 0; i < num_cores; i++)
         reallocated_particles[i] = reallocate_for_region(spec, reallocated_sizes[i], sizes[i], particles_by_region[i], num_cores);
 
+    for (int i = 0; i < num_cores; i++)
+        for (int j = 0; j < num_cores; j++)
+            print_particle_ids(LOG_LEVEL_DEBUG, "Dump of reallocated particles", reallocated_sizes[i][j], reallocated_particles[i][j]);
+
     // Recompute the sizes for all regions based on what was allocated.
     for (int i = 0; i < num_cores; i++)
         sizes[i] = 0;
@@ -112,15 +116,17 @@ Particle **execute_time_step(int *sizes, Particle **particles_by_region)
         for (int j = 0; j < num_cores; j++)
             sizes[j] += reallocated_sizes[i][j];
 
+    print_ints(LOG_LEVEL_DEBUG, "Resultant region sizes", num_cores, sizes);
+
     // Merge all regions back together.
     Particle **merged_particles = allocate_particles(sizes, num_cores);
     int *counters = calloc(num_cores, sizeof(int));
-    for (int i = 0; i < num_cores; i++) // Resultant region
-        for (int j = 0; j < num_cores; j++) // Region within the "process"
-            for (int k = 0, size = reallocated_sizes[i][j]; k < size; k++) // Particle within the region
-                memcpy(&merged_particles[i][counters[j]++], &reallocated_particles[i][j][k], sizeof(Particle));
+    for (int process = 0; process < num_cores; process++) // "Process" number
+        for (int region = 0; region < num_cores; region++) // Region within the "process"
+            for (int k = 0, size = reallocated_sizes[process][region]; k < size; k++) // Particle within the region
+                merged_particles[region][counters[region]++] = reallocated_particles[process][region][k];
 
-    print_ints(LOG_LEVEL_DEBUG, "Resultant region sizes", num_cores, counters);
+    print_ints(LOG_LEVEL_DEBUG, "Merged region sizes", num_cores, counters);
 
     // Free all dynamically allocated memory.
     for (int i = 0; i < num_cores; i++) free(reallocated_sizes[i]);
