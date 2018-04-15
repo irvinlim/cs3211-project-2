@@ -1,0 +1,9 @@
+TimeSlots: 10
+TimeStep: 0.1
+Horizon: 0
+GridSize: 200
+NumberOfSmallParticles: 100000
+SmallParticleMass: 1
+SmallParticleRadius: 1
+NumberOfLargeParticles: 1
+8 4 100 100
