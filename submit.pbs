@@ -58,7 +58,7 @@ echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." >> "$LOGFILE"
 echo "==============================================" >> "$LOGFILE"
 echo "" >> "$LOGFILE"
 
-COMMAND="mpirun -np $NUM_PROCS $PROG $SPECFILE $OUTPUTFILE $REPORTFILE $FRAMESDIR"
+COMMAND="mpirun --oversubscribe -np $NUM_PROCS $PROG $SPECFILE $OUTPUTFILE $REPORTFILE $FRAMESDIR"
 echo Executing command: "$COMMAND" >> "$LOGFILE"
 echo "LOG_LEVEL=$LOG_LEVEL" >> "$LOGFILE"
 echo >> "$LOGFILE"
