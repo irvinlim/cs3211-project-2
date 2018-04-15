@@ -123,7 +123,9 @@ function nextFrame(imageData, size, bitmapMax) {
     canvas.height = gridsize * Math.sqrt(regions);
 }
 
-function stop() {
+function stop(e) {
+    e.preventDefault();
+
     if (timeout) clearTimeout(timeout);
 }
 
