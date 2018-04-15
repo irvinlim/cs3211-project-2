@@ -185,8 +185,9 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
 
         Vector pos1 = { .x = denorm_region_x(p1.x, region_id, spec), .y = denorm_region_y(p1.y, region_id, spec) };
         Vector vel1 = { .x = p1.vx, .y = p1.vy };
-        LL_DEBUG("Handling collisions for particle %d:", i + 1);
+        LL_DEBUG("Handling collisions for region %d, particle %d:", region_id, i + 1);
         LL_DEBUG2("  (x, y)     = (%0.9Lf, %0.9Lf)", pos1.x, pos1.y);
+        LL_DEBUG2("  (vx, vy)   = (%0.9Lf, %0.9Lf)", vel1.x, vel1.y);
         LL_DEBUG2("  m, r       = (%0.9Lf, %0.9Lf)", p1.mass, p1.radius);
 
         // Check for collisions against all other particles in every region.
@@ -204,6 +205,7 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 Vector vel2 = { .x = p2.vx, .y = p2.vy };
                 LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
                 LL_DEBUG2("    (x, y)   = (%0.9Lf, %0.9Lf)", pos2.x, pos2.y);
+                LL_DEBUG2("    (vx, vy) = (%0.9Lf, %0.9Lf)", vel2.x, vel2.y);
                 LL_DEBUG2("    m, r     = (%0.9Lf, %0.9Lf)", p2.mass, p2.radius);
 
                 Vector vel_diff = vec_sub(vel1, vel2);
@@ -219,9 +221,9 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 if (dist > r_sum) continue;
                 LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, i + 1, region, j + 1);
 
-                // Handle the case when the particles overlap, AND their direction vectors are equal.
+                // Handle the case when the particles overlap, AND their unit vectors are equal.
                 // Add an arbitrary constant to both x and y velocities so that they are different.
-                if (vec_len(pos_diff) == 0 && vec_len(vel_diff) == 0) {
+                if (vec_len(pos_diff) == 0 && vec_normalize(vel1).x == vec_normalize(vel2).x && vec_normalize(vel1).y == vec_normalize(vel2).y) {
                     vel1 = (Vector){ .x = p1.vx - SOFTENING_CONSTANT, .y = p1.vy + SOFTENING_CONSTANT };
                     vel2 = (Vector){ .x = p2.vx + SOFTENING_CONSTANT, .y = p2.vy - SOFTENING_CONSTANT };
                     LL_DEBUG2("      Overlap! Adding arbitrary constant to p1.vel = (%0.9Lf, %0.9Lf); p2.vel = (%0.9Lf, %0.9Lf)", vel1.x, vel1.y, vel2.x, vel2.y);

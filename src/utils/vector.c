@@ -40,5 +40,8 @@ Vector vec_mul_scalar(long double k, Vector v)
 
 Vector vec_normalize(Vector v)
 {
+    // Handle zero vectors.
+    if (vec_len(v) == 0) return vec_mul_scalar(0, v);
+
     return vec_mul_scalar(1 / vec_len(v), v);
 }
