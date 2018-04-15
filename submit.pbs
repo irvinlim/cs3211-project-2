@@ -48,13 +48,16 @@ echo > "$LOGFILE"
 
 # Run the job.
 
+export LOG_LEVEL
+
 echo "Starting job at `date '+%Y-%m-%d %H:%M:%S'`..." >> "$LOGFILE"
 echo "==============================================" >> "$LOGFILE"
 echo "" >> "$LOGFILE"
 
-echo mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" >> "$LOGFILE" 2>&1
-export LOG_LEVEL
-echo "LOG_LEVEL=$LOG_LEVEL"
+echo "Executing command: " mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" "$FRAMESDIR" >> "$LOGFILE"
+echo "LOG_LEVEL=$LOG_LEVEL" >> "$LOGFILE"
+echo >> "$LOGFILE"
+
 mpirun -np "$NUM_PROCS" "$PROG" "$SPECFILE" "$OUTPUTFILE" "$REPORTFILE" >> "$LOGFILE" 2>&1
 
 echo "" >> "$LOGFILE"
