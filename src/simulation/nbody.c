@@ -21,7 +21,7 @@ void update_position(long double dt, Spec spec, int size, Particle *particles, i
     for (int i = 0; i < size; i++) {
         Particle p = particles[i];
 
-        LL_DEBUG("+ Particle %6.0d: ", i + 1);
+        LL_DEBUG("+ Particle %6.0d: ", p.id);
         // Denormalize the position wrt region first.
         particles[i].x = denorm_region_x(p.x, region_id, spec);
         particles[i].y = denorm_region_y(p.y, region_id, spec);
@@ -124,7 +124,7 @@ void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles
         long double fx = 0.0, fy = 0.0;
 
         Particle p0 = particles_by_region[region_id][i];
-        LL_DEBUG("Computing force on particle %d with dt = %0.6Lf:", i + 1, dt);
+        LL_DEBUG("Computing force on region %d, particle %d with dt = %0.6Lf:", region_id, p0.id, dt);
         LL_DEBUG2("  mass            = %0.9Lf", p0.mass);
         LL_DEBUG("+ p0(x, y)        = (%0.9Lf, %0.9Lf)", p0.x, p0.y);
         LL_DEBUG("  denorm_p0(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p0.x, region_id, spec), denorm_region_y(p0.y, region_id, spec));
@@ -136,7 +136,7 @@ void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles
                 if (region == region_id && i == j) continue;
 
                 Particle p1 = particles_by_region[region][j];
-                LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("+ Region %d, particle %d: ", region, p1.id);
                 LL_DEBUG2("    mass            = %0.9Lf", p1.mass);
                 LL_DEBUG2("    p1(x, y)        = (%0.9Lf, %0.9Lf)", p1.x, p1.y);
                 LL_DEBUG2("    denorm_p1(x, y) = (%0.9Lf, %0.9Lf)", denorm_region_x(p1.x, region, spec), denorm_region_y(p1.y, region, spec));
@@ -185,7 +185,7 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
 
         Vector pos1 = { .x = denorm_region_x(p1.x, region_id, spec), .y = denorm_region_y(p1.y, region_id, spec) };
         Vector vel1 = { .x = p1.vx, .y = p1.vy };
-        LL_DEBUG("Handling collisions for region %d, particle %d:", region_id, i + 1);
+        LL_DEBUG("Handling collisions for region %d, particle %d:", region_id, p1.id);
         LL_DEBUG2("  (x, y)     = (%0.9Lf, %0.9Lf)", pos1.x, pos1.y);
         LL_DEBUG2("  (vx, vy)   = (%0.9Lf, %0.9Lf)", vel1.x, vel1.y);
         LL_DEBUG2("  m, r       = (%0.9Lf, %0.9Lf)", p1.mass, p1.radius);
@@ -203,7 +203,7 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
 
                 Vector pos2 = { .x = denorm_region_x(p2.x, region, spec), .y = denorm_region_y(p2.y, region, spec) };
                 Vector vel2 = { .x = p2.vx, .y = p2.vy };
-                LL_DEBUG2("+ Region %d, particle %d: ", region, j + 1);
+                LL_DEBUG2("+ Region %d, particle %d: ", region, p2.id);
                 LL_DEBUG2("    (x, y)   = (%0.9Lf, %0.9Lf)", pos2.x, pos2.y);
                 LL_DEBUG2("    (vx, vy) = (%0.9Lf, %0.9Lf)", vel2.x, vel2.y);
                 LL_DEBUG2("    m, r     = (%0.9Lf, %0.9Lf)", p2.mass, p2.radius);
@@ -219,7 +219,7 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
 
                 // Check if particles are collided.
                 if (dist > r_sum) continue;
-                LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, i + 1, region, j + 1);
+                LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, p1.id, region, p2.id);
 
                 // Handle the case when the particles overlap, AND their unit vectors are equal.
                 // Add an arbitrary constant to both x and y velocities so that they are different.
@@ -299,7 +299,7 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
         Particle p = particles[i];
 
         Vector pos = { .x = denorm_region_x(p.x, region_id, spec), .y = denorm_region_y(p.y, region_id, spec) };
-        LL_DEBUG("Handling wall collisions for particle %d:", i + 1);
+        LL_DEBUG("Handling wall collisions for region %d, particle %d:", region_id, p.id);
         LL_DEBUG2("  (x, y)     = (%0.9Lf, %0.9Lf)", pos.x, pos.y);
 
         long double dist_top = pos.y;
