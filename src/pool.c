@@ -307,42 +307,52 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 {
     int num_cores = get_num_cores();
     int region_id = get_process_id();
+    int canvas_length = spec.GridSize * spec.PoolLength;
 
     // Allocate space for a 3-D array.
     int ***collated = malloc(num_cores * sizeof(int **));
     for (int region = 0; region < num_cores; region++) {
-        collated[region] = malloc(spec.GridSize * sizeof(int *));
-        for (int y = 0; y < spec.GridSize; y++)
-            collated[region][y] = malloc(spec.GridSize * sizeof(int));
+        collated[region] = malloc(canvas_length * sizeof(int *));
+        for (int y = 0; y < canvas_length; y++)
+            collated[region][y] = malloc(canvas_length * sizeof(int));
     }
 
     // Generate canvas in the region that this process is in charge of.
     print_particles(LOG_LEVEL_DEBUG, "Generating canvas for my region", sizes[region_id], particles_by_region[region_id]);
-    int **canvas = generate_region_canvas(spec.GridSize, sizes[region_id], particles_by_region[region_id]);
+    int **canvas = generate_region_canvas(spec, sizes[region_id], particles_by_region[region_id], region_id);
     LL_VERBOSE("Canvas generated for region %d.", region_id);
+
+    // Copy canvas for the master region first.
+    if (is_master())
+        for (int i = 0; i < canvas_length; i++)
+            for (int j = 0; j < canvas_length; j++)
+                collated[region_id][i][j] = canvas[i][j];
 
     // Send all canvases to the master process.
     for (int region = 0; region < num_cores; region++) {
         // Send each row of the canvas separately.
-        for (int y = 0; y < spec.GridSize; y++) {
+        for (int y = 0; y < canvas_length; y++) {
+            // Don't send/receive to/from self.
+            if (is_master() && region == MASTER_ID) continue;
+
             // Only the P-th process should be sending to master.
             if (region == region_id)
-                mpi_send(canvas[y], spec.GridSize, MPI_INT, MASTER_ID, 0, MPI_COMM_WORLD);
+                mpi_send(canvas[y], canvas_length, MPI_INT, MASTER_ID, 0, MPI_COMM_WORLD);
 
             // Handle receiving from P processes.
             if (is_master())
-                mpi_recv(collated[region][y], spec.GridSize, MPI_INT, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                mpi_recv(collated[region][y], canvas_length, MPI_INT, region, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
     }
 
     if (is_master()) LL_VERBOSE("%s", "All canvases sent to master!");
 
     // Generate the heatmap.
-    if (is_master()) generate_heatmap(spec, collated, outputfile);
+    if (is_master()) generate_heatmap(spec, num_cores, collated, outputfile);
 
     // Free memory.
     for (int region = 0; region < num_cores; region++) {
-        for (int y = 0; y < spec.GridSize; y++)
+        for (int y = 0; y < canvas_length; y++)
             free(collated[region][y]);
         free(collated[region]);
     }

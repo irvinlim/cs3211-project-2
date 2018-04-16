@@ -8,10 +8,10 @@
  * any value greater than BITMAP_MAX represents the body
  * of a large particle.
  */
-int **generate_region_canvas(int gridsize, int n, Particle *particles);
+int **generate_region_canvas(Spec spec, int n, Particle *particles, int region_id);
 
 /**
  * Generate a heatmap of particles in all regions from a list of canvases, 
  * and saves it to an image file.
  */
-void generate_heatmap(Spec spec, int ***canvas_by_region, char *outputfile);
+void generate_heatmap(Spec spec, int num_regions, int ***canvas_by_region, char *outputfile);

@@ -46,12 +46,12 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
     // Generate canvas for each region.
     for (int region_id = 0; region_id < num_cores; region_id++) {
         print_particles(LOG_LEVEL_DEBUG, "Generating canvas for my region", sizes[region_id], particles_by_region[region_id]);
-        all_canvases[region_id] = generate_region_canvas(spec.GridSize, sizes[region_id], particles_by_region[region_id]);
+        all_canvases[region_id] = generate_region_canvas(spec, sizes[region_id], particles_by_region[region_id], region_id);
         LL_VERBOSE("Canvas generated for region %d.", region_id);
     }
 
     // Generate the heatmap.
-    generate_heatmap(spec, all_canvases, outputfile);
+    generate_heatmap(spec, num_cores, all_canvases, outputfile);
     free(all_canvases);
 }
 

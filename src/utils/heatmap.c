@@ -16,12 +16,14 @@
  * any value greater than BITMAP_MAX represents the body
  * of a large particle.
  */
-int **generate_region_canvas(int gridsize, int n, Particle *particles)
+int **generate_region_canvas(Spec spec, int n, Particle *particles, int region_id)
 {
+    int canvas_length = spec.GridSize * spec.PoolLength;
+
     // Allocate enough memory for a 2-D canvas.
-    int **canvas = (int **)malloc(gridsize * sizeof(int *));
-    for (int i = 0; i < gridsize; i++)
-        canvas[i] = (int *)calloc(gridsize, sizeof(int));
+    int **canvas = (int **)malloc(canvas_length * sizeof(int *));
+    for (int i = 0; i < canvas_length; i++)
+        canvas[i] = (int *)calloc(canvas_length, sizeof(int));
 
     // Iterate through all particles.
     for (int i = 0; i < n; i++) {
@@ -35,12 +37,16 @@ int **generate_region_canvas(int gridsize, int n, Particle *particles)
         for (int j = -r; j <= r; j++) {
             for (int k = -r; k <= r; k++) {
                 if (j * j + k * k < p.radius * p.radius) {
-                    // Get the coordinates relative to the origin.
-                    int x = p.x + k;
-                    int y = p.y + j;
+                    // Denormalize the position wrt region.
+                    int nx = denorm_region_x(p.x, region_id, spec);
+                    int ny = denorm_region_y(p.y, region_id, spec);
 
-                    // Prevent drawing outside of the bounds of the array.
-                    if (x < 0 || x >= gridsize || y < 0 || y >= gridsize) continue;
+                    // Get the coordinates relative to the origin.
+                    int x = nx + k;
+                    int y = ny + j;
+
+                    // Prevent drawing outside of the bounds of the board.
+                    if (x < 0 || x >= canvas_length || y < 0 || y >= canvas_length) continue;
 
                     // If the particle size is large, we immediately set the value to BITMAP_MAX + 1.
                     // Otherwise, we will increment the value, up to BITMAP_MAX.
@@ -60,9 +66,8 @@ int **generate_region_canvas(int gridsize, int n, Particle *particles)
  * Generate a heatmap of particles in all regions from a list of canvases, 
  * and saves it to an image file.
  */
-void generate_heatmap(Spec spec, int ***canvas_by_region, char *outputfile)
+void generate_heatmap(Spec spec, int num_regions, int ***canvas_by_region, char *outputfile)
 {
-    // Get canvas length.
     int canvas_length = spec.GridSize * spec.PoolLength;
 
     // Open file for writing.
@@ -78,17 +83,24 @@ void generate_heatmap(Spec spec, int ***canvas_by_region, char *outputfile)
     // Print each cell in the entire canvas.
     for (int y = 0; y < canvas_length; y++) {
         for (int x = 0; x < canvas_length; x++) {
-            int region = get_denorm_region(x, y, spec);
-            int nx = norm_region_int(x, spec);
-            int ny = norm_region_int(y, spec);
-            int cell = canvas_by_region[region][ny][nx];
+            int sum = 0;
+
+            // Sum up the cells.
+            for (int region = 0; region < num_regions; region++) {
+                int cell = canvas_by_region[region][y][x];
+
+                if (sum > BITMAP_MAX || cell > BITMAP_MAX)
+                    sum = BITMAP_MAX + 1;
+                else
+                    sum = fmin(sum + cell, BITMAP_MAX);
+            }
 
             // If the value is greater than BITMAP_MAX, we draw a blue pixel.
             // Otherwise, we draw a red pixel whose intensity is the value.
-            if (cell > BITMAP_MAX)
+            if (sum > BITMAP_MAX)
                 fprintf(fp, "0 0 %d", BITMAP_MAX);
             else
-                fprintf(fp, "%d 0 0", cell);
+                fprintf(fp, "%d 0 0", sum);
 
             if (x < canvas_length - 1)
                 fprintf(fp, " ");
