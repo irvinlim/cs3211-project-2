@@ -189,6 +189,10 @@ void collate_timings(char *reportfile)
         // Write the report to a file if filename was specified.
         if (reportfile != NULL) {
             FILE *fp = fopen(reportfile, "w");
+            if (fp == NULL) {
+                LL_ERROR("Could not open report file %s for writing!", reportfile);
+                return;
+            }
 
             fprintf(fp, "%s\n", "============================");
             fprintf(fp, "%s\n", "    Pool Simulator Report   ");
