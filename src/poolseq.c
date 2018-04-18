@@ -177,7 +177,7 @@ void collate_timings(char *reportfile)
         LL_SUCCESS("%s", "============================");
         LL_SUCCESS("Number of regions:    %d", num_cores);
         LL_SUCCESS("Number of iterations: %d", spec.TimeSlots);
-        LL_SUCCESS("Number of particles:  %d", spec.TotalNumberOfParticles * num_cores);
+        LL_SUCCESS("Particles per region: %d", spec.TotalNumberOfParticles);
         LL_SUCCESS("%s", "============================");
         LL_SUCCESS("%s", "Computation time:");
         format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
@@ -199,7 +199,7 @@ void collate_timings(char *reportfile)
             fprintf(fp, "%s\n", "============================");
             fprintf(fp, "Number of regions:    %d\n", num_cores);
             fprintf(fp, "Number of iterations: %d\n", spec.TimeSlots);
-            fprintf(fp, "Number of particles:  %d\n", spec.TotalNumberOfParticles * num_cores);
+            fprintf(fp, "Particles per region: %d\n", spec.TotalNumberOfParticles);
             fprintf(fp, "%s\n", "============================");
             fprintf(fp, "%s\n", "Computation time:");
             format_time(timebuf, TIMEBUF_LENGTH, comp_sum);
