@@ -40,6 +40,9 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
 {
     int num_cores = get_num_cores();
 
+    // Bail early if we have no output filename.
+    if (outputfile == NULL) return;
+
     // Allocate space for all canvases.
     int ***all_canvases = malloc(num_cores * sizeof(int **));
 

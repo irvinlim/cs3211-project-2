@@ -315,6 +315,9 @@ void collate_generate_heatmap(int *sizes, Particle **particles_by_region, char *
     int region_id = get_process_id();
     int canvas_length = spec.GridSize * spec.PoolLength;
 
+    // Bail early if we have no output filename.
+    if (outputfile == NULL) return;
+
     // Allocate space for a 3-D array.
     int ***collated = malloc(num_cores * sizeof(int **));
     for (int region = 0; region < num_cores; region++) {
