@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PBS=${PBS:-"submit.pbs"}
+PBS=${1:-"submit.pbs"}
 
 module load openmpi/intel/1.10.2
 
