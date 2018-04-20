@@ -179,6 +179,9 @@ void update_velocity(long double dt, Spec spec, int *sizes, Particle **particles
  */
 void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, int num_regions, int region_id)
 {
+    // Count the number of collisions we handled in total.
+    int total_collisions = 0;
+
     // Iterate each particle in the region.
     for (int i = 0; i < sizes[region_id]; i++) {
         Particle p1 = particles_by_region[region_id][i];
@@ -220,6 +223,7 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
                 // Check if particles are collided.
                 if (dist > r_sum) continue;
                 LL_DEBUG("  + Collision detected between (%d, %d) and (%d, %d)!", region_id, p1.id, region, p2.id);
+                total_collisions++;
 
                 // Handle the case when the particles overlap, AND their unit vectors are equal.
                 // Add an arbitrary constant to both x and y velocities so that they are different.
@@ -288,6 +292,8 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
             }
         }
     }
+
+    LL_VERBOSE2("Total number of particle collisions for region %d: %d", region_id, total_collisions);
 }
 
 /**
@@ -295,6 +301,9 @@ void handle_collisions(Spec spec, int *sizes, Particle **particles_by_region, in
  */
 void handle_wall_collisions(Spec spec, int size, Particle *particles, int region_id)
 {
+    // Count the number of collisions we handled in total.
+    int total_collisions = 0;
+
     for (int i = 0; i < size; i++) {
         Particle p = particles[i];
 
@@ -312,6 +321,7 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
             LL_DEBUG2("  + Collision with top wall: p.y += %0.9Lf", p.radius - dist_top);
             particles[i].y += p.radius - dist_top;
             particles[i].vy *= -1;
+            total_collisions++;
         }
 
         // Handle bottom wall collisions.
@@ -319,6 +329,7 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
             LL_DEBUG2("  + Collision with bottom wall: p.y -= %0.9Lf", p.radius - dist_bot);
             particles[i].y -= p.radius - dist_bot;
             particles[i].vy *= -1;
+            total_collisions++;
         }
 
         // Handle left wall collisions.
@@ -326,6 +337,7 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
             LL_DEBUG2("  + Collision with left wall: p.x += %0.9Lf", p.radius - dist_lft);
             particles[i].x += p.radius - dist_lft;
             particles[i].vx *= -1;
+            total_collisions++;
         }
 
         // Handle right wall collisions.
@@ -333,6 +345,7 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
             LL_DEBUG2("  + Collision with right wall: p.x -= %0.9Lf", p.radius - dist_rgt);
             particles[i].x -= p.radius - dist_rgt;
             particles[i].vx *= -1;
+            total_collisions++;
         }
 
         // Perform assertions to aid debugging.
@@ -340,4 +353,6 @@ void handle_wall_collisions(Spec spec, int size, Particle *particles, int region
         assert(!isnan(p.x) && !isnan(p.y) && isfinite(p.x) && isfinite(p.y));
         assert(!isnan(p.vx) && !isnan(p.vy) && isfinite(p.vx) && isfinite(p.vy));
     }
+
+    LL_VERBOSE2("Total number of wall collisions for region %d: %d", region_id, total_collisions);
 }
