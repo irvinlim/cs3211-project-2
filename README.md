@@ -50,11 +50,12 @@ You can increase the verbosity of the output by passing the `LOG_LEVEL` environm
 * **1 - ERROR**: Only show errors
 * **2 - SUCCESS**: Also show success messages
 * **3 - NOTICE (Default)**: Also show notices
-* **4 - VERBOSE**: Show some verbose messages
-* **5 - MPI**: Debug communication results
-* **6 - DEBUG**: Debug computation mode
-* **7 - DEBUG2**: Debug computation working
-* **8 - MPI2**: Debug individual communications
+* **4 - VERBOSE**: Show timing messages and other verbose messages
+* **5 - VERBOSE2**: Show summaries of timestep execution
+* **6 - MPI**: Debug communication results
+* **7 - DEBUG**: Debug computation results
+* **8 - DEBUG2**: Debug computation details
+* **9 - MPI2**: Debug individual communications
 
 For example, to increase the verbosity to VERBOSE, you can do
 
@@ -70,24 +71,6 @@ To help with this, you can limit the logging process to only a certain process s
 
 ```sh
 LOG_LEVEL=6 LOG_PROCESS=0 mpirun -np 4 pool initialspec.txt finalbrd.ppm
-```
-
-## Deployment on NSCC
-
-Since the NSCC server does not have outbound Internet access, deployment and/or sync of the source files over Git is not possible. Instead, you can use `rsync` together with `ssh` to upload the files locally:
-
-```sh
-rsync -r -a --exclude=".*/" -e ssh --delete . nscc:~/cs3211-project-2
-```
-
-Replace `nscc` with the SSH username + hostname combination, or a SSH hostname alias. Alternatively, the `rsync.sh` file is provided for convenience, which will synchronise the source files to the server, as well as the output/log files back to the local directory.
-
-### Running on NSCC
-
-A sample PBS schedule file can be found at `submit.pbs`. To submit and run the job, you can use the given `qsub.sh` file:
-
-```sh
-./qsub.sh
 ```
 
 ## Reports
